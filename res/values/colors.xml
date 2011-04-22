@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<color name="timeline_background">#ffe8c6ff</color>
+	<color name="board_background">#fffff888</color>
+	<color name="headline_date">#ff9c9c9c</color>
+	<color name="headline_selection">#fffffe00</color>
+	<color name="headline_stroke">#ff444444</color>
+	<color name="selected_timeline">#64ff8000</color>
+	<color name="date_text">#ff000000</color>
+	<color name="normal_text">#ff000000</color>
+
+	<!-- configuration for edit_event-->
+	<color name="title_text">#ff000000</color>
+
+	<color name="edit_background">#ffffffff</color>
+
+	<color name="document_background">#8885fffb</color>
+
+	<color name="outside_background">#ff838383</color>
+	<color name="weekday_background">#ffededed</color>
+	<color name="holiday_background">#ffcd8383</color>
+</resources>

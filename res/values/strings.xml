@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">ArielEvent</string>
+	<string name="move_prev">＜</string>
+	<string name="move_next">＞</string>
+	<string name="editevent_title">EditEvent</string>
+	<string name="eventindex_listview_title">IndexListView</string>
+	<string name="eventindex_day_title">EventIndexDay</string>
+	<string name="make_event">予定の作成</string>
+</resources>
