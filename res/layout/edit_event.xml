@@ -83,9 +83,9 @@
 		android:layout_height="wrap_content"
 		android:layout_toRightOf="@id/context"
 		android:layout_alignTop="@id/context"
-		android:minLines="1"
+		android:minLines="5"
 		android:maxLines="5"
-		android:minHeight="200sp"
+		android:gravity="left|top"
 		android:scrollHorizontally="true"
 		/>
 
