@@ -31,7 +31,7 @@ public class ScheduleContent
 
 		if((this.startTime.getYear() == cmpDay.getYear()) &&
 			(this.startTime.getMonth() == cmpDay.getMonth()) &&
-			(this.startTime.getDay() == cmpDay.getDay())) {
+			(this.startTime.getDate() == cmpDay.getDate())) {
 
 			ret = true;
 		}
