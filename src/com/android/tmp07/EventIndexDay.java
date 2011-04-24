@@ -174,7 +174,7 @@ public class EventIndexDay extends Activity
 		sendCal.set(Calendar.HOUR_OF_DAY, hour);
 		sendCal.set(Calendar.MINUTE, minute);
 
-		if(ScheduleContent.isConformSchedule(sendCal.getTime())){
+		if(ScheduleContent.isConformScheduleFromTime(sendCal.getTime())){
 			intent = new Intent(this, EventListView.class);
 			intent.putExtra(EventListView.KEY_DATE, sendCal);
 		}else{

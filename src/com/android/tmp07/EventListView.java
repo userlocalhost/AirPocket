@@ -55,7 +55,7 @@ public class EventListView extends Activity
 
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.event_listview_rowdata, R.id.ev_list_row_label);
 
-		docs = ScheduleContent.grepSchedule(currentDate.getTime());
+		docs = ScheduleContent.grepScheduleFromTime(currentDate.getTime());
 		for(int i=0; i<docs.size(); i++){
 			ScheduleContent doc = (ScheduleContent) docs.get(i);
 			Date startTime = doc.getStartTime();

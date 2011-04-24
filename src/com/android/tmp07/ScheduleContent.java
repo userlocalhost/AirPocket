@@ -39,7 +39,7 @@ public class ScheduleContent
 		return ret;
 	}
 
-	public static ArrayList grepSchedule(Date date) {
+	public static ArrayList grepScheduleFromTime(Date date) {
 		ArrayList ret = new ArrayList();
 		int currentTime = (date.getHours() * 60) + date.getMinutes();
 
@@ -56,10 +56,34 @@ public class ScheduleContent
 		return ret;
 	}
 
-	public static boolean isConformSchedule(Date date) {
+	public static ArrayList grepScheduleFromDate(Date date) {
+		ArrayList ret = new ArrayList();
+		
+		for(int i=0; i<documents.size(); i++) {
+			ScheduleContent doc = documents.get(i);
+
+			if(doc.isSameDay(date)) {
+				ret.add(doc);
+			}
+		}
+
+		return ret;
+	}
+
+	public static boolean isConformScheduleFromDate(Date date) {
 		boolean ret = false;
 
-		if(grepSchedule(date).size() > 0){
+		if(grepScheduleFromDate(date).size() > 0){
+			ret = true;
+		}
+
+		return ret;
+	}
+
+	public static boolean isConformScheduleFromTime(Date date) {
+		boolean ret = false;
+
+		if(grepScheduleFromTime(date).size() > 0){
 			ret = true;
 		}
 

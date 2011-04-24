@@ -11,6 +11,8 @@ import android.view.Gravity;
 import android.widget.RelativeLayout;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
+import android.widget.FrameLayout;
+
 import android.widget.TableRow;
 import android.widget.TextView;
 
@@ -30,6 +32,10 @@ public class ArielEvent extends Activity
 	private static final String[] weekLabelJp = {"月", "火", "水", "木", "金", "土", "日"};
 	private static final String TAG = "Tmp12";
 
+	/* current activity status */
+	private static int statusSuspend = 0;
+	private static int statusActive = 1;
+
 	private LinkedList<TableRow> contents = new LinkedList<TableRow>();
 
 	protected final Calendar currentDate = Calendar.getInstance();
@@ -40,6 +46,8 @@ public class ArielEvent extends Activity
 	private static final float labelSize = 18f;
 	private static final float columnSize = 20f;
 	private static final float outsideColumnSize = 15f;
+
+	private int activityStatus;
 
 	OnClickListener moveMonth = new View.OnClickListener() {
 		public void onClick(View v){
@@ -93,6 +101,32 @@ public class ArielEvent extends Activity
 		}
 	};
 
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		if(activityStatus == statusSuspend){
+			TableLayout mainBoard = (TableLayout) findViewById(R.id.ev_month_index_main_board);
+			int length = contents.size();
+	
+			for(int i=0; i<length; i++){
+				mainBoard.removeView(contents.get(i));
+			}
+	
+			contents.clear();
+			constructScreen();
+
+			activityStatus = statusActive;
+		}
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+
+		activityStatus = statusSuspend;
+	}
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -110,6 +144,8 @@ public class ArielEvent extends Activity
 		generateWeekLabel();
 
 		constructScreen();
+
+		activityStatus = statusActive;
 	}
 
 	private void constructScreen() {
@@ -141,6 +177,7 @@ public class ArielEvent extends Activity
 		try {
 			TableLayout mainBoard = (TableLayout) findViewById(R.id.ev_month_index_main_board);
 			Calendar tmpCal = (Calendar) currentDate.clone();
+			Calendar now = Calendar.getInstance();
 			boolean lastMonthFlag = true;
 			boolean endOfMonth = false;
 			int columnNum = 6;
@@ -148,13 +185,13 @@ public class ArielEvent extends Activity
 			int dayCount = 1;
 			int daysOfMonth = getDaysOfMonth(tmpCal.get(Calendar.MONTH));
 			int daysOfLastMonth = getDaysOfMonth(tmpCal.get(Calendar.MONTH) - 1);
-	
+
 			mainBoard.setStretchAllColumns(true);
 			tmpCal.set(Calendar.DAY_OF_MONTH, 1);
 			weekCount = tmpCal.get(Calendar.DAY_OF_WEEK);
 	
-			Log.d(TAG, "[generateMonthView] weekCount:"+weekCount);
-			Log.d(TAG, "[generateMonthView] daysOfMonth::"+daysOfMonth);
+			Log.d(TAG, "[generateYearView] currentYear:"+tmpCal.getTime().getYear());
+			Log.d(TAG, "[generateMonthView] currentMonth:"+tmpCal.getTime().getMonth());
 	
 			for(int i=0; i<columnNum; i++){
 				TableRow weekRow = new TableRow(this);
@@ -179,7 +216,9 @@ public class ArielEvent extends Activity
 	
 				for(; weekCount<8; weekCount++){
 					if(endOfMonth == false){
+						FrameLayout frameLayout = new FrameLayout(this);
 						TextView day = new TextView(this);
+
 						day.setTag(dayCount);
 						day.setText(String.format("%s", dayCount++));
 						day.setBackgroundColor(getResources().getColor(R.color.weekday_background));
@@ -188,8 +227,29 @@ public class ArielEvent extends Activity
 						day.setHeight(columnHeight);
 						day.setGravity(Gravity.CENTER_HORIZONTAL);
 						day.setOnClickListener(selectDay);
+
+						frameLayout.addView(day);
+					
+						if((now.get(Calendar.MONTH) == tmpCal.get(Calendar.MONTH)) && 
+							(now.get(Calendar.YEAR) == tmpCal.get(Calendar.YEAR)) && 
+							(tmpCal.get(Calendar.DAY_OF_MONTH) == (now.get(Calendar.DAY_OF_MONTH)))) {
+
+							TextView event = new TextView(this);
+
+							event.setBackgroundResource(R.drawable.event_today);
+							event.setHeight(columnHeight);
+
+							frameLayout.addView(event);
+						}else if(ScheduleContent.isConformScheduleFromDate(tmpCal.getTime())) {
+							TextView event = new TextView(this);
+
+							event.setBackgroundResource(R.drawable.event_existence);
+							event.setHeight(columnHeight);
+
+							frameLayout.addView(event);
+						}
 		
-						weekRow.addView(day);
+						weekRow.addView(frameLayout);
 		
 						if(dayCount > daysOfMonth){
 							endOfMonth = true;
@@ -206,6 +266,8 @@ public class ArielEvent extends Activity
 		
 						weekRow.addView(day);
 					}
+
+					tmpCal.roll(Calendar.DAY_OF_MONTH, true);
 				}
 				weekCount = 1;
 	
