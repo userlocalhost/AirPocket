@@ -59,12 +59,9 @@ public class EditEvent extends Activity
 			if(endMinutes > startMinutes) {
 
 				if((requestStatus & StatusEdit) > 0) {
-					Log.d(TAG, "[submitEvent] update");
-					updateDocument();
-				} else {
-					Log.d(TAG, "[submitEvent] create");
-					makeDocument(startTime.getTime(), endTime.getTime());
+					document.removeObj();
 				}
+				makeDocument(startTime.getTime(), endTime.getTime());
 	
 				Intent i = new Intent();
 	
@@ -176,7 +173,6 @@ public class EditEvent extends Activity
 	}
 
 	private void makeDocument(Date startTime, Date endTime) {
-		LinkedList<ScheduleContent> duplicateDocs = new LinkedList<ScheduleContent>();
 		ArrayList indexList = new ArrayList();
 
 		int i, depth, position;
@@ -190,8 +186,6 @@ public class EditEvent extends Activity
 
 		newDoc.setPosition(0, 0);
 
-		Log.d(TAG, String.format("[makeScheduleFromResult] regtime:(%d,%d)", regStartMinutes, regEndMinutes));
-
 		/* check duplicate docs */
 		for(i=0; i<ScheduleContent.documents.size(); i++){
 			ScheduleContent doc = ScheduleContent.documents.get(i);
@@ -199,10 +193,12 @@ public class EditEvent extends Activity
 				int startMinutes = (doc.getStartTime().getHours() * 60) + doc.getStartTime().getMinutes();
 				int endMinutes = (doc.getEndTime().getHours() * 60) + doc.getEndTime().getMinutes();
 
-				Log.d(TAG, String.format("[makeScheduleFromResult] prev[%d]:(%d,%d)", i, startMinutes, endMinutes));
 				if(((regStartMinutes >= startMinutes) && (regStartMinutes < endMinutes)) ||
 					((regEndMinutes > startMinutes) && (regEndMinutes < endMinutes)) ||
 					((regStartMinutes < startMinutes) && (regEndMinutes > endMinutes))) {
+
+					newDoc.addOverlappedId(doc.getId());
+					doc.addOverlappedId(newDoc.getId());
 
 					doc.setDepth(doc.getDepth() + 1);
 					indexList.add(doc.getIndex());
