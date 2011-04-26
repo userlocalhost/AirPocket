@@ -43,6 +43,18 @@ public class ScheduleContent
 		return ret;
 	}
 
+	public void removeObj() {
+		for(int i=0; i<documents.size(); i++) {
+			ScheduleContent doc = documents.get(i);
+
+			if(doc.id.compareTo(this.id) == 0) {
+				Log.d(TAG, "[removeObj] indexOf:"+doc.id.toString());
+				documents.remove(i);
+			}
+		}
+	}
+
+	/* followings are class method */
 	public static ArrayList grepScheduleFromTime(Date date) {
 		ArrayList ret = new ArrayList();
 		int currentTime = (date.getHours() * 60) + date.getMinutes();

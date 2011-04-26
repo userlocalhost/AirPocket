@@ -13,8 +13,12 @@ import android.view.View;
 import android.view.View.OnClickListener;
 
 import android.app.TimePickerDialog;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 
 import android.content.Intent;
+import android.content.DialogInterface;
+
 import android.util.Log;
 
 import java.util.Date;
@@ -50,7 +54,24 @@ public class EventViewer extends Activity
 
 	OnClickListener selectDelete = new View.OnClickListener() {
 		public void onClick(View v) {
-			Log.d(TAG, "[selectDelete]");
+
+			new AlertDialog.Builder(EventViewer.this)
+				.setTitle("予定の削除")
+				.setMessage(String.format("%s を削除してもいいですか？", document.getSubject()))
+				.setPositiveButton("OK",
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dlg, int sumthin) {
+							document.removeObj();
+							finish();
+						}
+					})
+				.setNeutralButton("Cancel",
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dlg, int sumthin) {
+							// nope
+						}
+					})
+				.show();
 		}
 	};
 

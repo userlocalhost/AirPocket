@@ -59,8 +59,10 @@ public class EditEvent extends Activity
 			if(endMinutes > startMinutes) {
 
 				if((requestStatus & StatusEdit) > 0) {
+					Log.d(TAG, "[submitEvent] update");
 					updateDocument();
 				} else {
+					Log.d(TAG, "[submitEvent] create");
 					makeDocument(startTime.getTime(), endTime.getTime());
 				}
 	
