@@ -20,5 +20,8 @@
 		<activity android:name=".EditEvent"
 			android:label="@string/editevent_title">
 		</activity>
+		<activity android:name=".EventViewer"
+			android:label="@string/eventviewer_title">
+		</activity>
 	</application>
 </manifest> 
