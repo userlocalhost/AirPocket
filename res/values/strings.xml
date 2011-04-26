@@ -6,5 +6,9 @@
 	<string name="editevent_title">EditEvent</string>
 	<string name="eventindex_listview_title">IndexListView</string>
 	<string name="eventindex_day_title">EventIndexDay</string>
+	<string name="eventviewer_title">EventViewer</string>
 	<string name="make_event">予定の作成</string>
+
+	<string name="edit_event">編集</string>
+	<string name="delete_event">削除</string>
 </resources>

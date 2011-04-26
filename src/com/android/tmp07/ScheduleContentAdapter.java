@@ -4,7 +4,9 @@ import android.content.Context;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.LayoutInflater;
 import android.util.Log;
 
 import java.util.Date;
@@ -18,31 +20,45 @@ public class ScheduleContentAdapter extends ArrayAdapter<ScheduleContent>
 	private static final String TAG = "ScheduleContentAdapter";
 	private List<ScheduleContent> items;
 
-	ScheduleContentAdapter(Context context, int resourceId, List<ScheduleContent> items) {
+	private LayoutInflater inflater;
+	private int resourceId;
+	OnClickListener selectEvent;
+
+	ScheduleContentAdapter(Context context, int resourceId, List<ScheduleContent> items, OnClickListener selectEvent) {
 		super(context, resourceId, items);
 
 		this.items = items;
+		this.resourceId = resourceId;
+		this.inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		this.selectEvent = selectEvent;
 	}
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		View view = convertView;
+		View row = convertView;
+
+		if(row == null) {
+			row = this.inflater.inflate(resourceId, null);
+		}
 
 		try {
 			ScheduleContent doc = items.get(position);
 			Date startTime = doc.getStartTime();
-			Date endTime = doc.getStartTime();
+			Date endTime = doc.getEndTime();
 				
 			String timeline = String.format("%02d/%02d - %02d/%02d", 
 					startTime.getHours(), startTime.getMinutes(),
 					endTime.getHours(), endTime.getMinutes());
 	
-			TextView text = (TextView) convertView.findViewById(R.id.ev_list_row_label);
-			text.setText(String.format("> %s\n%s", doc.getSubject(), timeline));
+			TextView text = (TextView) row.findViewById(R.id.ev_list_row_label);
+			text.setText(String.format("%s\n%s", doc.getSubject(), timeline));
+
+			row.setTag(doc);
+			row.setOnClickListener(this.selectEvent);
 		} catch(Exception e) {
 			Log.e(TAG, "[getView] ERROR:"+e.getMessage());
 		}
 
-		return view;
+		return row;
 	}
 }

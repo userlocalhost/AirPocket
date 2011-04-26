@@ -26,6 +26,10 @@ public class EditEvent extends Activity
 {
 	public static final String KEY_DATE =
 		"com.android.tmp07.editevent.date";
+	public static final String KEY_STATUS =
+		"com.android.tmp07.editevent.status";
+	public static final String KEY_OBJID =
+		"com.android.tmp07.editevent.objid";
 	public static final String KEY_SUBJECT =
 		"com.android.tmp07.editevent.subject";
 	public static final String KEY_CONTEXT =
@@ -35,7 +39,7 @@ public class EditEvent extends Activity
 	public static final String KEY_ENDTIME =
 		"com.android.tmp07.editevent.endtime";
 
-	public static final int requestOfEditEvent = 0;
+	public static final int StatusEdit = 1<<0;
 
 	private static final String TAG = "EditEvent";
 	private static final String TIME_CONFIG_ALERT = "終了時刻が開始時刻の前に設定されています。";
@@ -44,13 +48,21 @@ public class EditEvent extends Activity
 	private Calendar startTime;
 	private Calendar endTime;
 
+	private int requestStatus;
+	private ScheduleContent document;
+
 	OnClickListener submitEvent = new View.OnClickListener(){
 		public void onClick(View v){
 			int startMinutes = (startTime.get(Calendar.HOUR_OF_DAY) * 60) + startTime.get(Calendar.MINUTE);
 			int endMinutes = (endTime.get(Calendar.HOUR_OF_DAY) * 60) + endTime.get(Calendar.MINUTE);
 
 			if(endMinutes > startMinutes) {
-				makeDocument(startTime.getTime(), endTime.getTime());
+
+				if((requestStatus & StatusEdit) > 0) {
+					updateDocument();
+				} else {
+					makeDocument(startTime.getTime(), endTime.getTime());
+				}
 	
 				Intent i = new Intent();
 	
@@ -100,6 +112,8 @@ public class EditEvent extends Activity
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.edit_event);
+
+		requestStatus = getIntent().getIntExtra(KEY_STATUS, 0);
 		
 		findViewById(R.id.submit).setOnClickListener(submitEvent);
 		findViewById(R.id.cancel).setOnClickListener(cancelEvent);
@@ -132,6 +146,20 @@ public class EditEvent extends Activity
 					true).show();
 			}
 		});
+
+		if((requestStatus & StatusEdit) > 0) {
+			document = ScheduleContent.getFromId(
+					getIntent().getStringExtra(KEY_OBJID));
+
+			((TextView) findViewById(R.id.subject_input)).setText(document.getSubject());
+			((TextView) findViewById(R.id.context_input)).setText(document.getContext());
+
+			startTime.set(Calendar.HOUR_OF_DAY, document.getStartTime().getHours());
+			startTime.set(Calendar.MINUTE, document.getStartTime().getMinutes());
+
+			endTime.set(Calendar.HOUR_OF_DAY, document.getEndTime().getHours());
+			endTime.set(Calendar.MINUTE, document.getEndTime().getMinutes());
+		}
 
 		updateTimeDisplay(startTime, R.id.start_time);
 		updateTimeDisplay(endTime, R.id.end_time);
@@ -200,5 +228,12 @@ public class EditEvent extends Activity
 		newDoc.setPosition(indexList.size(), targetIndex);
 
 		ScheduleContent.documents.add(newDoc);
+	}
+
+	private void updateDocument() {
+		document.setStartTime(startTime.getTime());
+		document.setEndTime(endTime.getTime());
+		document.setSubject(((TextView) findViewById(R.id.subject_input)).getText().toString());
+		document.setContext(((TextView) findViewById(R.id.context_input)).getText().toString());
 	}
 }

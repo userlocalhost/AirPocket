@@ -5,12 +5,14 @@ import android.util.Log;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class ScheduleContent
 {
 	private static final String TAG = "ScheduleContent";
 	public static LinkedList<ScheduleContent> documents = new LinkedList<ScheduleContent>();
 
+	private UUID id;
 	private String subject;
 	private String context;
 	private Date startTime;
@@ -24,6 +26,8 @@ public class ScheduleContent
 		this.context = summary;
 		this.startTime = start;
 		this.endTime = end;
+
+		this.id = UUID.randomUUID();
 	}
 
 	public boolean isSameDay(Date cmpDay) {
@@ -90,6 +94,21 @@ public class ScheduleContent
 		return ret;
 	}
 
+	public static ScheduleContent getFromId(String uuidStr) {
+		ScheduleContent ret = null;
+
+		for(int i=0; i<documents.size(); i++) {
+			ScheduleContent doc = documents.get(i);
+
+			if(doc.id.toString().equals(uuidStr)) {
+				ret = doc;
+				break;
+			}
+		}
+
+		return ret;
+	}
+
 	/* get/set methods */
 	public void setDepth(int depth) {
 		this.depth = depth;
@@ -102,6 +121,22 @@ public class ScheduleContent
 	public void setPosition(int depth, int index) {
 		this.depth = depth;
 		this.index = index;
+	}
+
+	public void setStartTime(Date time) {
+		this.startTime = time;
+	}
+
+	public void setEndTime(Date time) {
+		this.endTime = time;
+	}
+
+	public void setSubject(String str) {
+		this.subject = str;
+	}
+
+	public void setContext(String str) {
+		this.context = str;
 	}
 
 	public Date getStartTime() {
@@ -126,5 +161,9 @@ public class ScheduleContent
 
 	public String getContext() {
 		return this.context;
+	}
+
+	public String getId() {
+		return this.id.toString();
 	}
 }

@@ -18,6 +18,7 @@ import android.util.Log;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Calendar;
 
 import java.lang.Exception;
@@ -42,6 +43,22 @@ public class EventListView extends Activity
 		}
 	};
 
+	OnClickListener selectEvent = new View.OnClickListener() {
+		public void onClick(View v) {
+			Intent intent = new Intent(EventListView.this, EventViewer.class);
+			ScheduleContent doc = (ScheduleContent) v.getTag();
+
+			intent.putExtra(EventViewer.KEY_OBJ_ID, doc.getId());
+			intent.putExtra(EventViewer.KEY_DATE, currentDate);
+
+			finish();
+
+			Log.d(TAG, "[selectEvent:onClick]");
+
+			startActivity(intent);
+		}
+	};
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState)
@@ -53,20 +70,14 @@ public class EventListView extends Activity
 		
 		currentDate = (Calendar) getIntent().getSerializableExtra(KEY_DATE);
 
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.event_listview_rowdata, R.id.ev_list_row_label);
-
+		List<ScheduleContent> datalist = new ArrayList<ScheduleContent>();
 		docs = ScheduleContent.grepScheduleFromTime(currentDate.getTime());
 		for(int i=0; i<docs.size(); i++){
-			ScheduleContent doc = (ScheduleContent) docs.get(i);
-			Date startTime = doc.getStartTime();
-			Date endTime = doc.getStartTime();
-
-			String timeline = String.format("%02d/%02d - %02d/%02d", 
-					startTime.getHours(), startTime.getMinutes(),
-					endTime.getHours(), endTime.getMinutes());
-
-			adapter.add(String.format("%s\n%s", doc.getSubject(), timeline));
+			datalist.add((ScheduleContent) docs.get(i));
 		}
+
+		ScheduleContentAdapter adapter = new ScheduleContentAdapter(
+				this, R.layout.event_listview_rowdata, datalist, selectEvent);
 
 		try {
 			TextView current_date = (TextView) findViewById(R.id.ev_list_current_date);

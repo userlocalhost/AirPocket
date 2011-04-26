@@ -103,7 +103,7 @@ public class EventIndexDay extends Activity
 	{
 		super.onActivityResult(requestCode, resultCode, data);
 
-		if(requestCode == EditEvent.requestOfEditEvent && resultCode == RESULT_OK){
+		if(requestCode == EditEvent.StatusEdit && resultCode == RESULT_OK){
 			//makeScheduleFromResult(data);
 		}
 	}
@@ -182,6 +182,6 @@ public class EventIndexDay extends Activity
 			intent.putExtra(EditEvent.KEY_DATE, sendCal);
 		}
 
-		startActivityForResult(intent, EditEvent.requestOfEditEvent);
+		startActivityForResult(intent, EditEvent.StatusEdit);
 	}
 }
