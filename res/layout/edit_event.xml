@@ -40,39 +40,63 @@
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_below="@id/subject"
-		android:text="日付："
+		android:text="日時："
 		android:paddingTop="25sp"
 		android:paddingBottom="25sp"
+		/>
+	<Button
+		android:id="@+id/start_date"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_toRightOf="@id/date"
+		android:layout_alignBaseline="@id/date"
+		android:text="開始日"
 		/>
 	<Button
 		android:id="@+id/start_time"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_toRightOf="@id/date"
-		android:layout_alignBaseline="@id/date"
+		android:layout_toRightOf="@id/start_date"
+		android:layout_alignBaseline="@id/start_date"
 		/>
 	<TextView
 		android:id="@+id/date_partition"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_toRightOf="@id/start_time"
-		android:text=" - "
+		android:text=" から "
 		android:layout_alignBaseline="@id/date"
+		/>
+	<Button
+		android:id="@+id/end_date"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/date"
+		android:layout_alignLeft="@id/start_date"
+		android:text="終了日"
 		/>
 	<Button
 		android:id="@+id/end_time"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_toRightOf="@id/date_partition"
-		android:layout_alignBaseline="@id/date"
+		android:layout_toRightOf="@id/end_date"
+		android:layout_alignBaseline="@id/end_date"
+		/>
+	<CheckBox
+		android:id="@+id/check_allday"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/end_date"
+		android:layout_alignLeft="@id/start_date"
+		android:text="終日"
+		android:textColor="@color/normal_text"
 		/>
 
 	<TextView
 		android:id="@+id/context"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_toRightOf="@id/context"
-		android:layout_below="@id/date"
+		android:layout_below="@id/check_allday"
 		android:text="要件："
 		/>
 	<EditText
