@@ -5,13 +5,19 @@ import android.os.Bundle;
 
 import android.widget.Toast;
 import android.widget.TimePicker;
+import android.widget.DatePicker;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 
 import android.view.View;
 import android.view.View.OnClickListener;
 
+
 import android.app.TimePickerDialog;
+import android.app.DatePickerDialog;
 
 import android.content.Intent;
 import android.util.Log;
@@ -21,6 +27,7 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.ArrayList;
 import java.text.DateFormat;
+import java.lang.Exception;
 
 public class EditEvent extends Activity
 {
@@ -50,6 +57,16 @@ public class EditEvent extends Activity
 
 	private int requestStatus;
 	private ScheduleContent document;
+
+	OnCheckedChangeListener checkAllDay = new CompoundButton.OnCheckedChangeListener() {
+		public void onCheckedChanged(CompoundButton button, boolean isChecked) {
+			if(isChecked) {
+				Log.d(TAG, "[checkAllDay] checked");
+			} else {
+				Log.d(TAG, "[checkAllDay] UN-checked");
+			}
+		}
+	};
 
 	OnClickListener submitEvent = new View.OnClickListener(){
 		public void onClick(View v){
@@ -86,8 +103,28 @@ public class EditEvent extends Activity
 			finish();
 		}
 	};
+	
+	DatePickerDialog.OnDateSetListener startDateEvent = new DatePickerDialog.OnDateSetListener(){
+		public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth){
+			startTime.set(Calendar.YEAR, year);
+			startTime.set(Calendar.MONTH, monthOfYear);
+			startTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+			
+			updateDateDisplay(startTime, R.id.start_date);
+		}
+	};
+	
+	DatePickerDialog.OnDateSetListener endDateEvent = new DatePickerDialog.OnDateSetListener(){
+		public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth){
+			endTime.set(Calendar.YEAR, year);
+			endTime.set(Calendar.MONTH, monthOfYear);
+			endTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+			
+			updateDateDisplay(endTime, R.id.end_date);
+		}
+	};
 
-	TimePickerDialog.OnTimeSetListener startEvent = new TimePickerDialog.OnTimeSetListener(){
+	TimePickerDialog.OnTimeSetListener startTimeEvent = new TimePickerDialog.OnTimeSetListener(){
 		public void onTimeSet(TimePicker view, int hour, int minute){
 			startTime.set(Calendar.HOUR_OF_DAY, hour);
 			startTime.set(Calendar.MINUTE, minute);
@@ -96,11 +133,11 @@ public class EditEvent extends Activity
 		}
 	};
 	
-	TimePickerDialog.OnTimeSetListener endEvent = new TimePickerDialog.OnTimeSetListener(){
+	TimePickerDialog.OnTimeSetListener endTimeEvent = new TimePickerDialog.OnTimeSetListener(){
 		public void onTimeSet(TimePicker view, int hour, int minute){
 			endTime.set(Calendar.HOUR_OF_DAY, hour);
 			endTime.set(Calendar.MINUTE, minute);
-			
+		
 			updateTimeDisplay(endTime, R.id.end_time);
 		}
 	};
@@ -126,25 +163,13 @@ public class EditEvent extends Activity
 		startTime = (Calendar) currentDate.clone();
 		endTime = (Calendar) currentDate.clone();
 
+		/* Set default endTime */
 		endTime.set(Calendar.HOUR_OF_DAY, startTime.get(Calendar.HOUR_OF_DAY) + 1);
 
-		((Button)findViewById(R.id.start_time)).setOnClickListener(new View.OnClickListener(){
-			public void onClick(View v){
-				new TimePickerDialog(EditEvent.this, startEvent,
-					startTime.get(Calendar.HOUR_OF_DAY),
-					startTime.get(Calendar.MINUTE),
-					true).show();
-			}
-		});
-		
-		((Button)findViewById(R.id.end_time)).setOnClickListener(new View.OnClickListener(){
-			public void onClick(View v){
-				new TimePickerDialog(EditEvent.this, endEvent,
-					endTime.get(Calendar.HOUR_OF_DAY),
-					endTime.get(Calendar.MINUTE),
-					true).show();
-			}
-		});
+		/* Initialize processing of time-and-date configuration */
+		initButtonEvent();
+
+		((CheckBox) findViewById(R.id.check_allday)).setOnCheckedChangeListener(checkAllDay);
 
 		if((requestStatus & StatusEdit) > 0) {
 			document = ScheduleContent.getFromId(
@@ -162,10 +187,60 @@ public class EditEvent extends Activity
 
 		updateTimeDisplay(startTime, R.id.start_time);
 		updateTimeDisplay(endTime, R.id.end_time);
+		
+		updateDateDisplay(startTime, R.id.start_date);
+		updateDateDisplay(endTime, R.id.end_date);
+	}
+
+	private void initButtonEvent() {
+		((Button)findViewById(R.id.start_time)).setOnClickListener(new View.OnClickListener(){
+			public void onClick(View v){
+				new TimePickerDialog(EditEvent.this, startTimeEvent,
+					startTime.get(Calendar.HOUR_OF_DAY),
+					startTime.get(Calendar.MINUTE),
+					true).show();
+			}
+		});
+		
+		((Button)findViewById(R.id.end_time)).setOnClickListener(new View.OnClickListener(){
+			public void onClick(View v){
+				new TimePickerDialog(EditEvent.this, endTimeEvent,
+					endTime.get(Calendar.HOUR_OF_DAY),
+					endTime.get(Calendar.MINUTE),
+					true).show();
+			}
+		});
+
+		((Button)findViewById(R.id.start_date)).setOnClickListener(new View.OnClickListener(){
+			public void onClick(View v) {
+				new DatePickerDialog(EditEvent.this, startDateEvent,
+					startTime.get(Calendar.YEAR),
+					startTime.get(Calendar.MONTH),
+					startTime.get(Calendar.DAY_OF_MONTH)).show();
+			}
+		});
+
+		((Button)findViewById(R.id.end_date)).setOnClickListener(new View.OnClickListener(){
+			public void onClick(View v) {
+				new DatePickerDialog(EditEvent.this, endDateEvent,
+					endTime.get(Calendar.YEAR),
+					endTime.get(Calendar.MONTH),
+					endTime.get(Calendar.DAY_OF_MONTH)).show();
+			}
+		});
+	}
+
+	private void updateDateDisplay(Calendar cal, int viewId) {
+		Date timeObj = cal.getTime();
+		int year = timeObj.getYear() + 1900;
+		int month = timeObj.getMonth() + 1;
+		int day = timeObj.getDate();
+
+		((Button)findViewById(viewId)).
+			setText(String.format("%04d/%02d/%02d", year, month, day));
 	}
 	
-	private void updateTimeDisplay(Calendar cal, int viewId)
-	{
+	private void updateTimeDisplay(Calendar cal, int viewId) {
 		Date timeObj = cal.getTime();
 
 		((Button)findViewById(viewId))
