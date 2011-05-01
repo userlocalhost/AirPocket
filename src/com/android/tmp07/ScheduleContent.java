@@ -135,8 +135,8 @@ public class ScheduleContent
 
 			if((doc.isSameDay(date) && (startTime <= currentTime) && (currentTime < endTime) &&
 				! doc.isStatus(ScheduleContent.Allday) && doc.isJustSameDay(date)) ||
-				(checkSameDate(date, doc.startTime) && (startTime <= currentTime)) ||
-				(checkSameDate(date, doc.endTime) && (currentTime < endTime)))
+				(! checkSameDate(date, doc.endTime) && checkSameDate(date, doc.startTime) && (startTime <= currentTime)) ||
+				(! checkSameDate(date, doc.startTime) && checkSameDate(date, doc.endTime) && (currentTime < endTime)))
 			{
 				ret.add(doc);
 			}

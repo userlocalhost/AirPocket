@@ -291,8 +291,8 @@ public class EditEvent extends Activity
 				(((regStartMinutes >= startMinutes) && (regStartMinutes < endMinutes)) ||
 				((regEndMinutes > startMinutes) && (regEndMinutes < endMinutes)) ||
 				((regStartMinutes < startMinutes) && (regEndMinutes > endMinutes)) ||
-				(checkSameDate(endTime, doc.getStartTime()) && (regEndMinutes > startMinutes)) ||
-				(checkSameDate(startTime, doc.getEndTime()) && (regStartMinutes > endMinutes)))
+				(! checkSameDate(endTime, doc.getEndTime()) && checkSameDate(endTime, doc.getStartTime()) && (regEndMinutes > startMinutes)) ||
+				(! checkSameDate(startTime, doc.getStartTime()) && checkSameDate(startTime, doc.getEndTime()) && (regStartMinutes > endMinutes)))
 			){
 				newDoc.addOverlappedId(doc.getId());
 				doc.addOverlappedId(newDoc.getId());

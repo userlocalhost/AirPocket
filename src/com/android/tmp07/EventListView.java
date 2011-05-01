@@ -25,8 +25,7 @@ import java.lang.Exception;
 
 public class EventListView extends Activity
 {
-	public static final String KEY_DATE = 
-		"com.android.tmp07.makelistview.date";
+	public static final String KEY_DATE = "com.android.tmp07.makelistview.date";
 
 	private static final String TAG = "EventListView";
 	private Calendar currentDate;
