@@ -70,11 +70,7 @@ public class EditEvent extends Activity
 
 	OnClickListener submitEvent = new View.OnClickListener(){
 		public void onClick(View v){
-			int startMinutes = (startTime.get(Calendar.HOUR_OF_DAY) * 60) + startTime.get(Calendar.MINUTE);
-			int endMinutes = (endTime.get(Calendar.HOUR_OF_DAY) * 60) + endTime.get(Calendar.MINUTE);
-
-			if(endMinutes > startMinutes) {
-
+			if(startTime.getTime().compareTo(endTime.getTime()) < 0) {
 				if((requestStatus & StatusEdit) > 0) {
 					document.removeObj();
 				}
@@ -99,6 +95,19 @@ public class EditEvent extends Activity
 	
 	OnClickListener cancelEvent = new View.OnClickListener(){
 		public void onClick(View v){
+
+			if(startTime.getTime().compareTo(endTime.getTime()) < 0) {
+				Log.d(TAG, "[debug] startTime < endTime");
+			}
+
+			if(startTime.getTime().compareTo(endTime.getTime()) == 0) {
+				Log.d(TAG, "[debug] startTime == endTime");
+			}
+
+			if(startTime.getTime().compareTo(endTime.getTime()) > 0) {
+				Log.d(TAG, "[debug] startTime > endTime");
+			}
+
 			setResult(RESULT_CANCELED);
 			finish();
 		}
@@ -250,6 +259,7 @@ public class EditEvent extends Activity
 	private void makeDocument(Date startTime, Date endTime) {
 		ArrayList indexList = new ArrayList();
 
+		CheckBox checkAllDay = (CheckBox) findViewById(R.id.check_allday);
 		int i, depth, position;
 		int regStartMinutes = (startTime.getHours() * 60) + startTime.getMinutes();
 		int regEndMinutes = (endTime.getHours() * 60) + endTime.getMinutes();
@@ -261,23 +271,34 @@ public class EditEvent extends Activity
 
 		newDoc.setPosition(0, 0);
 
+		/* A flag of all-day event */
+		if(checkAllDay.isChecked()) {
+			Log.d(TAG, "[makeDocument] mark all day");
+
+			newDoc.setStatus(ScheduleContent.Allday);
+		}
+
 		/* check duplicate docs */
 		for(i=0; i<ScheduleContent.documents.size(); i++){
 			ScheduleContent doc = ScheduleContent.documents.get(i);
-			if(doc.isSameDay(currentDate.getTime())) {
-				int startMinutes = (doc.getStartTime().getHours() * 60) + doc.getStartTime().getMinutes();
-				int endMinutes = (doc.getEndTime().getHours() * 60) + doc.getEndTime().getMinutes();
+			int startMinutes = (doc.getStartTime().getHours() * 60) + doc.getStartTime().getMinutes();
+			int endMinutes = (doc.getEndTime().getHours() * 60) + doc.getEndTime().getMinutes();
 
-				if(((regStartMinutes >= startMinutes) && (regStartMinutes < endMinutes)) ||
-					((regEndMinutes > startMinutes) && (regEndMinutes < endMinutes)) ||
-					((regStartMinutes < startMinutes) && (regEndMinutes > endMinutes))) {
+			if((doc.isSameDay(currentDate.getTime()) && 
+				! doc.isStatus(ScheduleContent.Allday) && 
+				(doc.isJustSameDay(startTime) || doc.isJustSameDay(endTime)))
+					&&
+				(((regStartMinutes >= startMinutes) && (regStartMinutes < endMinutes)) ||
+				((regEndMinutes > startMinutes) && (regEndMinutes < endMinutes)) ||
+				((regStartMinutes < startMinutes) && (regEndMinutes > endMinutes)) ||
+				(checkSameDate(endTime, doc.getStartTime()) && (regEndMinutes > startMinutes)) ||
+				(checkSameDate(startTime, doc.getEndTime()) && (regStartMinutes > endMinutes)))
+			){
+				newDoc.addOverlappedId(doc.getId());
+				doc.addOverlappedId(newDoc.getId());
 
-					newDoc.addOverlappedId(doc.getId());
-					doc.addOverlappedId(newDoc.getId());
-
-					doc.setDepth(doc.getDepth() + 1);
-					indexList.add(doc.getIndex());
-				}
+				doc.setDepth(doc.getDepth() + 1);
+				indexList.add(doc.getIndex());
 			}
 		}
 
@@ -308,5 +329,14 @@ public class EditEvent extends Activity
 		document.setEndTime(endTime.getTime());
 		document.setSubject(((TextView) findViewById(R.id.subject_input)).getText().toString());
 		document.setContext(((TextView) findViewById(R.id.context_input)).getText().toString());
+	}
+	
+	private static boolean checkSameDate(Date a, Date b) {
+		int aDate = (a.getYear() * 365) + (a.getMonth() * 31) + a.getDate();
+		int bDate = (b.getYear() * 365) + (b.getMonth() * 31) + b.getDate();
+
+		Log.d(TAG, String.format("[checkSameDate] aDate:%d, bDate:%d", aDate, bDate));
+
+		return (aDate == bDate);
 	}
 }

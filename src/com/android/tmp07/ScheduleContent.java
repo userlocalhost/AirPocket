@@ -9,8 +9,11 @@ import java.util.UUID;
 
 public class ScheduleContent
 {
-	private static final String TAG = "ScheduleContent";
+	/* Class member */
 	public static LinkedList<ScheduleContent> documents = new LinkedList<ScheduleContent>();
+	public static int Allday = 1<<0;
+
+	private static final String TAG = "ScheduleContent";
 	private ArrayList overlappedDocumentId = new ArrayList(); 
 
 	private UUID id;
@@ -18,6 +21,7 @@ public class ScheduleContent
 	private String context;
 	private Date startTime;
 	private Date endTime;
+	private int status;
 
 	private int index;
 	private int depth;
@@ -31,12 +35,40 @@ public class ScheduleContent
 		this.id = UUID.randomUUID();
 	}
 
-	public boolean isSameDay(Date cmpDay) {
+	/* This is a assistant method */
+	public boolean isJustSameDay(Date cmpDay) {
 		boolean ret = false;
 
-		if((this.startTime.getYear() == cmpDay.getYear()) &&
+		if(((this.startTime.getYear() == cmpDay.getYear()) &&
 			(this.startTime.getMonth() == cmpDay.getMonth()) &&
-			(this.startTime.getDate() == cmpDay.getDate())) {
+			(this.startTime.getDate() == cmpDay.getDate())) ||
+			((this.endTime.getYear() == cmpDay.getYear()) &&
+			(this.endTime.getMonth() == cmpDay.getMonth()) &&
+			(this.endTime.getDate() == cmpDay.getDate()))) {
+
+			ret = true;
+		}
+
+		return ret;
+	}
+
+	public boolean isSameDay(Date cmpDay) {
+		boolean ret = false;
+		Date date = (Date) cmpDay.clone();
+		Date startDate = (Date) startTime.clone();
+		Date endDate = (Date) endTime.clone();
+
+		/* reset date object */
+		date.setMinutes(0);
+		date.setHours(0);
+		startDate.setMinutes(0);
+		startDate.setHours(0);
+		endDate.setMinutes(0);
+		endDate.setHours(0);
+
+		if((startDate.compareTo(date) == 0) ||
+			(endDate.compareTo(date) == 0) ||
+			((startDate.compareTo(date) < 0) && endDate.compareTo(date) > 0)) {
 
 			ret = true;
 		}
@@ -101,7 +133,11 @@ public class ScheduleContent
 			int startTime = (doc.startTime.getHours() * 60) + doc.startTime.getMinutes();
 			int endTime = (doc.endTime.getHours() * 60) + doc.endTime.getMinutes();
 
-			if(doc.isSameDay(date) && (startTime <= currentTime) && (currentTime < endTime)) {
+			if((doc.isSameDay(date) && (startTime <= currentTime) && (currentTime < endTime) &&
+				! doc.isStatus(ScheduleContent.Allday) && doc.isJustSameDay(date)) ||
+				(checkSameDate(date, doc.startTime) && (startTime <= currentTime)) ||
+				(checkSameDate(date, doc.endTime) && (currentTime < endTime)))
+			{
 				ret.add(doc);
 			}
 		}
@@ -121,6 +157,23 @@ public class ScheduleContent
 		}
 
 		return ret;
+	}
+
+	public static ArrayList grepAllday(Date date) {
+		ArrayList ret = new ArrayList();
+		
+		for(int i=0; i<documents.size(); i++) {
+			ScheduleContent doc = documents.get(i);
+
+			if(doc.isSameDay(date) && 
+				(doc.isStatus(ScheduleContent.Allday) || ! doc.isJustSameDay(date))) {
+
+				ret.add(doc);
+			}
+		}
+
+		return ret;
+
 	}
 
 	public static boolean isConformScheduleFromDate(Date date) {
@@ -188,6 +241,10 @@ public class ScheduleContent
 		this.context = str;
 	}
 
+	public void setStatus(int status) {
+		this.status |= status;
+	}
+
 	public Date getStartTime() {
 		return this.startTime;
 	}
@@ -214,5 +271,19 @@ public class ScheduleContent
 
 	public String getId() {
 		return this.id.toString();
+	}
+
+	public boolean isStatus(int status) {
+		return ((this.status & status) > 0);
+	}
+
+	/* private processing */
+	private static boolean checkSameDate(Date a, Date b) {
+		int aDate = (a.getYear() * 365) + (a.getMonth() * 31) + a.getDate();
+		int bDate = (b.getYear() * 365) + (b.getMonth() * 31) + b.getDate();
+
+		Log.d(TAG, String.format("[checkSameDate] aDate:%d, bDate:%d", aDate, bDate));
+
+		return (aDate == bDate);
 	}
 }

@@ -34,10 +34,18 @@
 		android:textSize="20sp"
 		android:background="@drawable/headline_date"
 		/>
-	<ScrollView
+	<LinearLayout
+		android:id="@+id/ev_day_index_wholeday_list"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
 		android:layout_below="@id/ev_day_index_move_prev"
+		android:background="@color/board_background"
+		android:orientation="vertical"
+		/>
+	<ScrollView
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/ev_day_index_wholeday_list"
 		>
 		<LinearLayout
 			android:id="@+id/ev_day_index_main_screen"

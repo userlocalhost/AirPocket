@@ -24,6 +24,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 
 import java.util.LinkedList;
+import java.util.Date;
 
 public class EventView extends View {
 	private static final String[] data = {"0:00", "1:00","2:00","3:00","4:00","5:00","6:00","7:00","8:00","9:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"};
@@ -122,7 +123,11 @@ public class EventView extends View {
 			Paint textStyle = new Paint();
 			int paddingLeft = 0;
 
-			if(doc.isSameDay(EventIndexDay.currentDate.getTime())) {
+			Log.d(TAG, "[drawDocumens] date : "+EventIndexDay.currentDate.getTime().getDate());
+
+			if(doc.isSameDay(EventIndexDay.currentDate.getTime()) &&
+					doc.isJustSameDay(EventIndexDay.currentDate.getTime()) &&
+					! doc.isStatus(ScheduleContent.Allday)) {
 				int length = (getWidth() - paddingLeft);
 				int prefix = timelineWidth;
 				int depth = doc.getDepth();
@@ -140,6 +145,15 @@ public class EventView extends View {
 	
 				float docTop = ((screenHeight * startTotalMinutes) / 1440);
 				float docBottom = ((screenHeight * endTotalMinutes) / 1440);
+
+				if(! checkSameDate(EventIndexDay.currentDate.getTime(), doc.getStartTime())) {
+					docTop = 0;
+				}
+
+				if(! checkSameDate(EventIndexDay.currentDate.getTime(), doc.getEndTime())) {
+					docBottom = screenHeight;
+				}
+
 				docStyle.setStyle(Paint.Style.FILL);
 				docStyle.setColor(getResources().getColor(R.color.document_background));
 	
@@ -222,5 +236,12 @@ public class EventView extends View {
 				(topIndex * partHeight),
 				getWidth(), 
 				(bottomIndex * partHeight) + partHeight);
+	}
+
+	private static boolean checkSameDate(Date a, Date b) {
+		int aDate = (a.getYear() * 365) + (a.getMonth() * 31) + a.getDate();
+		int bDate = (b.getYear() * 365) + (b.getMonth() * 31) + b.getDate();
+
+		return (aDate == bDate);
 	}
 }
