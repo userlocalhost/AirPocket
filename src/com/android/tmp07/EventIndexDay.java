@@ -41,37 +41,15 @@ public class EventIndexDay extends Activity
 	OnClickListener moveDay = new View.OnClickListener() {
 		public void onClick(View v) {
 			int id = v.getId();
-			int prevDay = currentDate.get(Calendar.DAY_OF_MONTH);
-			int prevMonth = currentDate.get(Calendar.MONTH);
+			int direction = 0;
 
 			if(id == R.id.ev_day_index_move_next) {
-				currentDate.roll(Calendar.DAY_OF_MONTH, true);
-
-				if(prevDay > currentDate.get(Calendar.DAY_OF_MONTH)){
-					currentDate.roll(Calendar.MONTH, true);
-				}
-				
-				if(prevMonth > currentDate.get(Calendar.MONTH)){
-					currentDate.roll(Calendar.YEAR, true);
-				}
+				direction = 1;
 			} else if(id == R.id.ev_day_index_move_prev) {
-				currentDate.roll(Calendar.DAY_OF_MONTH, false);
-
-				if(prevDay < currentDate.get(Calendar.DAY_OF_MONTH)){
-					currentDate.roll(Calendar.MONTH, false);
-				}
-				
-				if(prevMonth < currentDate.get(Calendar.MONTH)){
-					currentDate.roll(Calendar.YEAR, false);
-				}
+				direction = -11;
 			}
 
-			finish();
-
-			Intent intent = new Intent(EventIndexDay.this, EventIndexDay.class);
-
-			intent.putExtra(KEY_DATE, currentDate);
-			startActivity(intent);
+			moveDate(direction);
 		}
 	};
 	
@@ -88,6 +66,40 @@ public class EventIndexDay extends Activity
 			startActivityForResult(intent, 1);
 		}
 	};
+
+	public void moveDate(int direction) {
+		int prevDay = currentDate.get(Calendar.DAY_OF_MONTH);
+		int prevMonth = currentDate.get(Calendar.MONTH);
+
+		if(direction > 0) {
+			currentDate.roll(Calendar.DAY_OF_MONTH, true);
+
+			if(prevDay > currentDate.get(Calendar.DAY_OF_MONTH)){
+				currentDate.roll(Calendar.MONTH, true);
+			}
+			
+			if(prevMonth > currentDate.get(Calendar.MONTH)){
+				currentDate.roll(Calendar.YEAR, true);
+			}
+		} else {
+			currentDate.roll(Calendar.DAY_OF_MONTH, false);
+
+			if(prevDay < currentDate.get(Calendar.DAY_OF_MONTH)){
+				currentDate.roll(Calendar.MONTH, false);
+			}
+			
+			if(prevMonth < currentDate.get(Calendar.MONTH)){
+				currentDate.roll(Calendar.YEAR, false);
+			}
+		}
+
+		finish();
+
+		Intent intent = new Intent(EventIndexDay.this, EventIndexDay.class);
+
+		intent.putExtra(KEY_DATE, currentDate);
+		startActivity(intent);
+	}
 
 	/** Called when the activity is first created. */
 	@Override

@@ -32,11 +32,16 @@ public class EventView extends View {
 
 	private static final int timelineWidth = 40;
 	private static final float timeRecoardSize = 15f;
+	private static final float moveDateThreashold = 100f;
 	private static int screenHeight = 960;
 
 	private final EventIndexDay index;
 	private final Rect selRect = new Rect();
 	private static int startPoint;
+
+	/* following member is used at onTouchEvent */
+	private float motionX;
+	private int motionStatus = 0;
 
 	public EventView(Context context){
 		super(context);
@@ -57,7 +62,7 @@ public class EventView extends View {
 	}
 
 	@Override
-	public boolean onTouchEvent(MotionEvent event){
+	public boolean onTouchEvent(MotionEvent event) {
 
 		/*
 		if(event.getAction() == MotionEvent.ACTION_DOWN){
@@ -84,16 +89,28 @@ public class EventView extends View {
 			Log.d(TAG, "[onTouchEvent] ACTION_UP");
 		}
 		*/
-		
-		if(event.getAction() == MotionEvent.ACTION_UP){
-			int currentPoint = (int)event.getY();
-			int indexNum = (48 * currentPoint) / screenHeight;
 
-			select(currentPoint, currentPoint);
-
-			this.index.showEditActivity((indexNum / 2), (indexNum % 2) * 30);
-
-			Log.d(TAG, "[onTouchEvent] ACTION_UP");
+		if(event.getAction() == MotionEvent.ACTION_DOWN) {
+			motionX = event.getX();
+		} else if(event.getAction() == MotionEvent.ACTION_MOVE) {
+			if((event.getX() - motionX) > moveDateThreashold) {
+				motionStatus = -1;
+			} else if((event.getX() - motionX) < (moveDateThreashold * -1)) {
+				motionStatus = 1;
+			}
+		} else if(event.getAction() == MotionEvent.ACTION_UP) {
+			if(motionStatus == 0) {
+				int currentPoint = (int)event.getY();
+				int indexNum = (48 * currentPoint) / screenHeight;
+	
+				select(currentPoint, currentPoint);
+	
+				this.index.showEditActivity((indexNum / 2), (indexNum % 2) * 30);
+			} else {
+				EventView.this.index.moveDate(motionStatus);
+				
+				motionStatus = 0;
+			}
 		}
 
 		return true;

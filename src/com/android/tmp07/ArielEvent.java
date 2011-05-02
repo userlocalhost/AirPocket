@@ -5,7 +5,9 @@ import android.os.Bundle;
 
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
+import android.view.MotionEvent;
 import android.view.Gravity;
 
 import android.widget.RelativeLayout;
@@ -35,6 +37,10 @@ public class ArielEvent extends Activity
 	/* current activity status */
 	private static int statusSuspend = 0;
 	private static int statusActive = 1;
+	private static final float moveThreashold = 100f;
+
+	private float motionX;
+	private int motionStatus = 0;
 
 	private LinkedList<TableRow> contents = new LinkedList<TableRow>();
 
@@ -51,53 +57,72 @@ public class ArielEvent extends Activity
 
 	OnClickListener moveMonth = new View.OnClickListener() {
 		public void onClick(View v){
-			TableLayout mainBoard = (TableLayout) findViewById(R.id.ev_month_index_main_board);
 			int id = v.getId();
-			int currentMonth = currentDate.get(Calendar.MONTH);
-			int currentYear = currentDate.get(Calendar.YEAR);
-
-			int length = contents.size();
-			for(int i=0; i<length; i++){
-				mainBoard.removeView(contents.get(i));
-			}
-			contents.clear();
+			int direction = 0;
 
 			if(id == R.id.ev_month_index_move_next){
-				if(++currentMonth > 11){
-					currentYear++;
-					currentMonth = 0;
-				}
-				Log.d(TAG, "[onClick] clicked prev button");
+				direction = 1;
 			}else if(id == R.id.ev_month_index_move_prev){
-				if(--currentMonth < 0){
-					currentYear--;
-					currentMonth = 11;
-				}
-				Log.d(TAG, "[onClick] clicked next button");
+				direction = -1;
 			}
 
-			currentDate.set(Calendar.MONTH, currentMonth);
-			currentDate.set(Calendar.YEAR, currentYear);
-
-			constructScreen();
+			doMoveMonth(direction);
 		}
 	};
 
 	OnClickListener selectDay = new View.OnClickListener() {
 		public void onClick(View v) {
-			try {
-				int numOfDay = (Integer) v.getTag();
-				Calendar sendCal = (Calendar) currentDate.clone();
-				Intent intent = new Intent(ArielEvent.this, EventIndexDay.class);
-	
-				sendCal.set(Calendar.DAY_OF_MONTH, numOfDay);
-	
-				intent.putExtra(EventIndexDay.KEY_DATE, sendCal);
-	
-				startActivity(intent);
-			} catch(Exception e) {
-				Log.d(TAG, "[selectDay] ERROR:"+e.getMessage());
+
+			if(motionStatus == 0) {
+				try {
+					int numOfDay = (Integer) v.getTag();
+					Calendar sendCal = (Calendar) currentDate.clone();
+					Intent intent = new Intent(ArielEvent.this, EventIndexDay.class);
+		
+					sendCal.set(Calendar.DAY_OF_MONTH, numOfDay);
+		
+					intent.putExtra(EventIndexDay.KEY_DATE, sendCal);
+		
+					startActivity(intent);
+				} catch(Exception e) {
+					Log.d(TAG, "[selectDay] ERROR:"+e.getMessage());
+				}
+			} else {
+				motionStatus = 0;
+
+				doMoveMonth(motionStatus);
 			}
+
+		}
+	};
+	
+	OnTouchListener testMotionEvent = new OnTouchListener() {
+		public boolean onTouch(View v, MotionEvent e) {
+			if(e.getAction() == MotionEvent.ACTION_DOWN) {
+				Log.d(TAG, String.format("[testMotionEvent] X:%f, rawX:%f", e.getX(), e.getRawX()));
+			}
+
+			return true;
+		}
+	};
+
+	OnTouchListener moveMonthMotion = new OnTouchListener() {
+		public boolean onTouch(View v, MotionEvent e) {
+			if(e.getAction() == MotionEvent.ACTION_DOWN) {
+				motionX = e.getRawX();
+			} else if(e.getAction() == MotionEvent.ACTION_MOVE) {
+				if((e.getX() - motionX) > moveThreashold) {
+					motionStatus = -1;
+				} else if((e.getX() - motionX) < (moveThreashold * -1)) {
+					motionStatus = 1;
+				}
+			} else if((e.getAction() == MotionEvent.ACTION_UP) && (motionStatus != 0)) {
+				doMoveMonth(motionStatus);
+				
+				motionStatus = 0;
+			}
+	
+			return true;
 		}
 	};
 
@@ -136,6 +161,8 @@ public class ArielEvent extends Activity
 		try {
 			findViewById(R.id.ev_month_index_move_prev).setOnClickListener(moveMonth);
 			findViewById(R.id.ev_month_index_move_next).setOnClickListener(moveMonth);
+
+			findViewById(R.id.ev_month_main_board).setOnTouchListener(moveMonthMotion);
 		} catch (Exception e) {
 			Log.d(TAG, "[onCreate] ERROR:"+e.getMessage());
 		}
@@ -227,6 +254,7 @@ public class ArielEvent extends Activity
 						day.setHeight(columnHeight);
 						day.setGravity(Gravity.CENTER_HORIZONTAL);
 						day.setOnClickListener(selectDay);
+						day.setOnTouchListener(moveMonthMotion);
 
 						frameLayout.addView(day);
 					
@@ -324,5 +352,36 @@ public class ArielEvent extends Activity
 		} catch (Exception e) {
 			Log.d(TAG, "[generateWeekLabel] ERROR:"+e.getMessage());
 		}
+	}
+
+	private void doMoveMonth(int direction) {
+		TableLayout mainBoard = (TableLayout) findViewById(R.id.ev_month_index_main_board);
+		int currentMonth = currentDate.get(Calendar.MONTH);
+		int currentYear = currentDate.get(Calendar.YEAR);
+
+		int length = contents.size();
+		for(int i=0; i<length; i++){
+			mainBoard.removeView(contents.get(i));
+		}
+		contents.clear();
+
+		if(direction > 0) {
+			if(++currentMonth > 11){
+				currentYear++;
+				currentMonth = 0;
+			}
+			Log.d(TAG, "[onClick] clicked prev button");
+		} else {
+			if(--currentMonth < 0){
+				currentYear--;
+				currentMonth = 11;
+			}
+			Log.d(TAG, "[onClick] clicked next button");
+		}
+
+		currentDate.set(Calendar.MONTH, currentMonth);
+		currentDate.set(Calendar.YEAR, currentYear);
+
+		constructScreen();
 	}
 }

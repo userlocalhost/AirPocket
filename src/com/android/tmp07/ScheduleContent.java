@@ -12,7 +12,7 @@ public class ScheduleContent
 	/* Class member */
 	public static LinkedList<ScheduleContent> documents = new LinkedList<ScheduleContent>();
 	public static int Allday = 1<<0;
-	public static int Multiday = 2<<0;
+	public static int Multiday = 1<<1;
 
 	private static final String TAG = "ScheduleContent";
 	private ArrayList overlappedDocumentId = new ArrayList(); 

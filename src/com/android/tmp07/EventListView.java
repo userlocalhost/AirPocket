@@ -96,7 +96,7 @@ public class EventListView extends Activity
 			TextView current_date = (TextView) findViewById(R.id.ev_list_current_date);
 
 			current_date.setTextColor(getResources().getColor(R.color.date_text));
-			current_date.setText(String.format("%d/%02d/%02d", 
+			current_date.setText(String.format("%04d/%02d/%02d", 
 						currentDate.get(Calendar.YEAR),
 						currentDate.get(Calendar.MONTH) + 1,
 						currentDate.get(Calendar.DAY_OF_MONTH)));

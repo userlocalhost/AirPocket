@@ -104,8 +104,13 @@ public class EventViewer extends Activity
 					currentDate.get(Calendar.MONTH) + 1,
 					currentDate.get(Calendar.DAY_OF_MONTH)));
 
-		if((eventStatus & EditEvent.StatusAllday) > 0) {
-			timeStr = "[終日]";
+		if(document.isStatus(ScheduleContent.Allday) && document.isStatus(ScheduleContent.Multiday)) {
+			timeStr = String.format("[終日] %04d/%02d/%02d - %04d/%02d/%02d",
+					startTime.getYear() + 1900, startTime.getMonth() + 1, startTime.getDate(),
+					endTime.getYear() + 1900, endTime.getMonth() + 1, endTime.getDate());
+		} else if(document.isStatus(ScheduleContent.Allday)) {
+			timeStr = String.format("[終日] %04d/%02d/%02d",
+					startTime.getYear() + 1900, startTime.getMonth() + 1, startTime.getDate());
 		} else {
 			timeStr = String.format("%02d:%02d - %02d:%02d",
 				startTime.getHours(), startTime.getMinutes(),

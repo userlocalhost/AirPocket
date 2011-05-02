@@ -45,13 +45,24 @@ public class ScheduleContentAdapter extends ArrayAdapter<ScheduleContent>
 			ScheduleContent doc = items.get(position);
 			Date startTime = doc.getStartTime();
 			Date endTime = doc.getEndTime();
-				
-			String timeline = String.format("%02d/%02d - %02d/%02d", 
+			String timeline;
+
+			if(doc.isStatus(ScheduleContent.Allday) && doc.isStatus(ScheduleContent.Multiday)) {
+				timeline = String.format("[終日]%04d/%02d/%02d-%04d/%02d/%02d",
+						startTime.getYear() + 1900, startTime.getMonth() + 1, startTime.getDate(),
+						endTime.getYear() + 1900, endTime.getMonth() + 1, endTime.getDate());
+			} else if(doc.isStatus(ScheduleContent.Allday)) {
+				timeline = String.format("[終日]%04d/%02d/%02d",
+						startTime.getYear() + 1900, startTime.getMonth() + 1, startTime.getDate());
+			} else {
+				timeline = String.format("%02d:%02d - %02d:%02d",
 					startTime.getHours(), startTime.getMinutes(),
 					endTime.getHours(), endTime.getMinutes());
+			}
 	
 			TextView text = (TextView) row.findViewById(R.id.ev_list_row_label);
 			text.setText(String.format("%s\n%s", doc.getSubject(), timeline));
+			//text.setWidth();
 
 			row.setTag(doc);
 			row.setOnClickListener(this.selectEvent);
