@@ -91,6 +91,11 @@ public class EventView extends View {
 		*/
 
 		if(event.getAction() == MotionEvent.ACTION_DOWN) {
+			if(motionStatus != 0) {
+				EventView.this.index.moveDate(motionStatus);
+				
+				motionStatus = 0;
+			}
 			motionX = event.getX();
 		} else if(event.getAction() == MotionEvent.ACTION_MOVE) {
 			if((event.getX() - motionX) > moveDateThreashold) {
@@ -109,6 +114,7 @@ public class EventView extends View {
 			} else {
 				EventView.this.index.moveDate(motionStatus);
 				
+				motionX = event.getX();
 				motionStatus = 0;
 			}
 		}

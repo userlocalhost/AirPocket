@@ -55,71 +55,37 @@ public class ArielEvent extends Activity
 
 	private int activityStatus;
 
-	OnClickListener moveMonth = new View.OnClickListener() {
-		public void onClick(View v){
-			int id = v.getId();
-			int direction = 0;
-
-			if(id == R.id.ev_month_index_move_next){
-				direction = 1;
-			}else if(id == R.id.ev_month_index_move_prev){
-				direction = -1;
-			}
-
-			doMoveMonth(direction);
-		}
-	};
-
-	OnClickListener selectDay = new View.OnClickListener() {
-		public void onClick(View v) {
-
-			if(motionStatus == 0) {
-				try {
-					int numOfDay = (Integer) v.getTag();
-					Calendar sendCal = (Calendar) currentDate.clone();
-					Intent intent = new Intent(ArielEvent.this, EventIndexDay.class);
-		
-					sendCal.set(Calendar.DAY_OF_MONTH, numOfDay);
-		
-					intent.putExtra(EventIndexDay.KEY_DATE, sendCal);
-		
-					startActivity(intent);
-				} catch(Exception e) {
-					Log.d(TAG, "[selectDay] ERROR:"+e.getMessage());
-				}
-			} else {
-				motionStatus = 0;
-
-				doMoveMonth(motionStatus);
-			}
-
-		}
-	};
-	
-	OnTouchListener testMotionEvent = new OnTouchListener() {
-		public boolean onTouch(View v, MotionEvent e) {
-			if(e.getAction() == MotionEvent.ACTION_DOWN) {
-				Log.d(TAG, String.format("[testMotionEvent] X:%f, rawX:%f", e.getX(), e.getRawX()));
-			}
-
-			return true;
-		}
-	};
-
 	OnTouchListener moveMonthMotion = new OnTouchListener() {
 		public boolean onTouch(View v, MotionEvent e) {
 			if(e.getAction() == MotionEvent.ACTION_DOWN) {
-				motionX = e.getRawX();
+				motionX = e.getX();
 			} else if(e.getAction() == MotionEvent.ACTION_MOVE) {
 				if((e.getX() - motionX) > moveThreashold) {
 					motionStatus = -1;
 				} else if((e.getX() - motionX) < (moveThreashold * -1)) {
 					motionStatus = 1;
 				}
-			} else if((e.getAction() == MotionEvent.ACTION_UP) && (motionStatus != 0)) {
-				doMoveMonth(motionStatus);
+			} else if(e.getAction() == MotionEvent.ACTION_UP) {
+				if(motionStatus == 0) {
+					try {
+						int numOfDay = (Integer) v.getTag();
+						Calendar sendCal = (Calendar) currentDate.clone();
+						Intent intent = new Intent(ArielEvent.this, EventIndexDay.class);
+			
+						sendCal.set(Calendar.DAY_OF_MONTH, numOfDay);
+			
+						intent.putExtra(EventIndexDay.KEY_DATE, sendCal);
+			
+						startActivity(intent);
+					} catch(Exception exception) {
+						Log.d(TAG, "[moveMonth] ERROR:"+exception.getMessage());
+					}
+				} else {
+					doMoveMonth(motionStatus);
 				
-				motionStatus = 0;
+					motionX = e.getX();
+					motionStatus = 0;
+				}
 			}
 	
 			return true;
@@ -159,9 +125,6 @@ public class ArielEvent extends Activity
 		setContentView(R.layout.eventindex_month);
 
 		try {
-			findViewById(R.id.ev_month_index_move_prev).setOnClickListener(moveMonth);
-			findViewById(R.id.ev_month_index_move_next).setOnClickListener(moveMonth);
-
 			findViewById(R.id.ev_month_main_board).setOnTouchListener(moveMonthMotion);
 		} catch (Exception e) {
 			Log.d(TAG, "[onCreate] ERROR:"+e.getMessage());
@@ -253,7 +216,6 @@ public class ArielEvent extends Activity
 						day.setTextSize(columnSize);
 						day.setHeight(columnHeight);
 						day.setGravity(Gravity.CENTER_HORIZONTAL);
-						day.setOnClickListener(selectDay);
 						day.setOnTouchListener(moveMonthMotion);
 
 						frameLayout.addView(day);

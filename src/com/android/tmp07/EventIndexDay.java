@@ -38,21 +38,6 @@ public class EventIndexDay extends Activity
 		}
 	};
 	
-	OnClickListener moveDay = new View.OnClickListener() {
-		public void onClick(View v) {
-			int id = v.getId();
-			int direction = 0;
-
-			if(id == R.id.ev_day_index_move_next) {
-				direction = 1;
-			} else if(id == R.id.ev_day_index_move_prev) {
-				direction = -11;
-			}
-
-			moveDate(direction);
-		}
-	};
-	
 	OnClickListener selectAlldayBoard = new View.OnClickListener() {
 		public void onClick(View v) {
 			Intent intent = new Intent(EventIndexDay.this, EventListView.class);
@@ -216,8 +201,6 @@ public class EventIndexDay extends Activity
 			current_date.setText(currentDateString);
 
 			findViewById(R.id.ev_day_index_current_date).setOnClickListener(selectTitle);
-			findViewById(R.id.ev_day_index_move_prev).setOnClickListener(moveDay);
-			findViewById(R.id.ev_day_index_move_next).setOnClickListener(moveDay);
 		} catch(Exception e) {
 			Log.e(TAG, "[onCreate] ERROR:"+e.getMessage());
 		}

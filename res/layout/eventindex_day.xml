@@ -4,32 +4,10 @@
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent"
 	>
-	<TextView
-		android:id="@+id/ev_day_index_move_prev"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:text="@string/move_prev"
-		android:layout_alignParentLeft="true"
-		android:layout_alignParentTop="true"
-		android:textSize="20sp"
-		android:background="@drawable/headline_button"
-		/>
-	<TextView
-		android:id="@+id/ev_day_index_move_next"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:text="@string/move_next"
-		android:layout_alignParentRight="true"
-		android:layout_alignParentTop="true"
-		android:textSize="20sp"
-		android:background="@drawable/headline_button"
-		/>
 	<TextView 
 		android:id="@+id/ev_day_index_current_date"
 		android:layout_width="fill_parent" 
 		android:layout_height="wrap_content" 
-		android:layout_toRightOf="@id/ev_day_index_move_prev"
-		android:layout_toLeftOf="@id/ev_day_index_move_next"
 		android:gravity="center"
 		android:textSize="20sp"
 		android:background="@drawable/headline_date"
@@ -38,7 +16,7 @@
 		android:id="@+id/ev_day_index_wholeday_list"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
-		android:layout_below="@id/ev_day_index_move_prev"
+		android:layout_below="@id/ev_day_index_current_date"
 		android:background="@color/board_background"
 		android:orientation="vertical"
 		/>
