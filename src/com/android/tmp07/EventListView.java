@@ -26,6 +26,9 @@ import java.lang.Exception;
 public class EventListView extends Activity
 {
 	public static final String KEY_DATE = "com.android.tmp07.makelistview.date";
+	public static final String KEY_STATUS= "com.android.tmp07.makelistview.status";
+
+	public static final int statusAllEvents = (1<<0);
 
 	private static final String TAG = "EventListView";
 	private Calendar currentDate;
@@ -50,6 +53,10 @@ public class EventListView extends Activity
 			intent.putExtra(EventViewer.KEY_OBJ_ID, doc.getId());
 			intent.putExtra(EventViewer.KEY_DATE, currentDate);
 
+			if(doc.isStatus(ScheduleContent.Allday)) {
+				intent.putExtra(EventViewer.KEY_STATUS, EditEvent.StatusAllday);
+			}
+
 			finish();
 
 			Log.d(TAG, "[selectEvent:onClick]");
@@ -67,10 +74,17 @@ public class EventListView extends Activity
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.event_listview);
 		
+		int listStatus = getIntent().getIntExtra(KEY_STATUS, 0);
 		currentDate = (Calendar) getIntent().getSerializableExtra(KEY_DATE);
 
 		List<ScheduleContent> datalist = new ArrayList<ScheduleContent>();
-		docs = ScheduleContent.grepScheduleFromTime(currentDate.getTime());
+
+		if((listStatus & statusAllEvents) > 0) {
+			docs = ScheduleContent.grepScheduleFromDate(currentDate.getTime());
+		} else {
+			docs = ScheduleContent.grepScheduleFromTime(currentDate.getTime());
+		}
+
 		for(int i=0; i<docs.size(); i++){
 			datalist.add((ScheduleContent) docs.get(i));
 		}

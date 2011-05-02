@@ -33,18 +33,21 @@ public class EventViewer extends Activity
 		"com.android.tmp07.eventviewer.date";
 	public static final String KEY_OBJ_ID =
 		"com.android.tmp07.eventviewer.object_id";
+	public static final String KEY_STATUS =
+		"com.android.tmp07.eventviewer.status";
 
 	private static final String TAG = "EventViewer";
 
 	private Calendar currentDate;
 	private ScheduleContent document;
+	private int eventStatus;
 
 	OnClickListener selectEdit = new View.OnClickListener() {
 		public void onClick(View v) {
 			Intent intent = new Intent(EventViewer.this, EditEvent.class);
 
 			intent.putExtra(EditEvent.KEY_DATE, currentDate);
-			intent.putExtra(EditEvent.KEY_STATUS, EditEvent.StatusEdit);
+			intent.putExtra(EditEvent.KEY_STATUS, EditEvent.StatusEdit | eventStatus);
 			intent.putExtra(EditEvent.KEY_OBJID, document.getId());
 
 			finish();
@@ -81,6 +84,7 @@ public class EventViewer extends Activity
 	{
 		Date startTime;
 		Date endTime;
+		String timeStr;
 
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.eventviewer);
@@ -88,22 +92,28 @@ public class EventViewer extends Activity
 		//findViewById(R.id.submit).setOnClickListener(submitEvent);
 		//findViewById(R.id.cancel).setOnClickListener(cancelEvent);
 
+		eventStatus = getIntent().getIntExtra(KEY_STATUS, 0);
 		document = ScheduleContent.getFromId(getIntent().getStringExtra(KEY_OBJ_ID));
 
 		startTime = document.getStartTime();
 		endTime = document.getEndTime();
 
 		currentDate = (Calendar) getIntent().getSerializableExtra(KEY_DATE);
-		((TextView) findViewById(R.id.title)).setText(String.format("%d/%02d/%02d の予定",
+		((TextView) findViewById(R.id.title)).setText(String.format("%04d/%02d/%02d の予定",
 					currentDate.get(Calendar.YEAR),
 					currentDate.get(Calendar.MONTH) + 1,
 					currentDate.get(Calendar.DAY_OF_MONTH)));
 
-		/* display setting */
-		((TextView) findViewById(R.id.time)).
-			setText(String.format("%02d:%02d - %02d:%02d",
+		if((eventStatus & EditEvent.StatusAllday) > 0) {
+			timeStr = "[終日]";
+		} else {
+			timeStr = String.format("%02d:%02d - %02d:%02d",
 				startTime.getHours(), startTime.getMinutes(),
-				endTime.getHours(), endTime.getMinutes()));
+				endTime.getHours(), endTime.getMinutes());
+		}
+
+		/* display setting */
+		((TextView) findViewById(R.id.time)).setText(timeStr);
 
 		((TextView) findViewById(R.id.subject_context)).setText(document.getSubject());
 		((TextView) findViewById(R.id.context)).setText(document.getContext());

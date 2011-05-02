@@ -47,6 +47,7 @@ public class EditEvent extends Activity
 		"com.android.tmp07.editevent.endtime";
 
 	public static final int StatusEdit = 1<<0;
+	public static final int StatusAllday = 1<<1;
 
 	private static final String TAG = "EditEvent";
 	private static final String TIME_CONFIG_ALERT = "終了時刻が開始時刻の前に設定されています。";
@@ -164,7 +165,7 @@ public class EditEvent extends Activity
 		findViewById(R.id.cancel).setOnClickListener(cancelEvent);
 
 		currentDate = (Calendar) getIntent().getSerializableExtra(KEY_DATE);
-		((TextView) findViewById(R.id.title)).setText(String.format("%d/%02d/%02d の予定作成",
+		((TextView) findViewById(R.id.title)).setText(String.format("%04d/%02d/%02d の予定作成",
 					currentDate.get(Calendar.YEAR),
 					currentDate.get(Calendar.MONTH) + 1,
 					currentDate.get(Calendar.DAY_OF_MONTH)));
@@ -187,11 +188,12 @@ public class EditEvent extends Activity
 			((TextView) findViewById(R.id.subject_input)).setText(document.getSubject());
 			((TextView) findViewById(R.id.context_input)).setText(document.getContext());
 
-			startTime.set(Calendar.HOUR_OF_DAY, document.getStartTime().getHours());
-			startTime.set(Calendar.MINUTE, document.getStartTime().getMinutes());
+			startTime.setTime(document.getStartTime());
+			endTime.setTime(document.getEndTime());
+		}
 
-			endTime.set(Calendar.HOUR_OF_DAY, document.getEndTime().getHours());
-			endTime.set(Calendar.MINUTE, document.getEndTime().getMinutes());
+		if((requestStatus & StatusAllday) > 0) {
+			((CheckBox) findViewById(R.id.check_allday)).setChecked(true);
 		}
 
 		updateTimeDisplay(startTime, R.id.start_time);
@@ -271,35 +273,39 @@ public class EditEvent extends Activity
 
 		newDoc.setPosition(0, 0);
 
-		/* A flag of all-day event */
-		if(checkAllDay.isChecked()) {
-			Log.d(TAG, "[makeDocument] mark all day");
-
-			newDoc.setStatus(ScheduleContent.Allday);
+		/* Is newDoc across multiple days */
+		if(! checkSameDate(startTime, endTime)) {
+			newDoc.setStatus(ScheduleContent.Multiday);
 		}
 
-		/* check duplicate docs */
-		for(i=0; i<ScheduleContent.documents.size(); i++){
-			ScheduleContent doc = ScheduleContent.documents.get(i);
-			int startMinutes = (doc.getStartTime().getHours() * 60) + doc.getStartTime().getMinutes();
-			int endMinutes = (doc.getEndTime().getHours() * 60) + doc.getEndTime().getMinutes();
+		if(! checkAllDay.isChecked()) {
 
-			if((doc.isSameDay(currentDate.getTime()) && 
-				! doc.isStatus(ScheduleContent.Allday) && 
-				(doc.isJustSameDay(startTime) || doc.isJustSameDay(endTime)))
-					&&
-				(((regStartMinutes >= startMinutes) && (regStartMinutes < endMinutes)) ||
-				((regEndMinutes > startMinutes) && (regEndMinutes < endMinutes)) ||
-				((regStartMinutes < startMinutes) && (regEndMinutes > endMinutes)) ||
-				(! checkSameDate(endTime, doc.getEndTime()) && checkSameDate(endTime, doc.getStartTime()) && (regEndMinutes > startMinutes)) ||
-				(! checkSameDate(startTime, doc.getStartTime()) && checkSameDate(startTime, doc.getEndTime()) && (regStartMinutes > endMinutes)))
-			){
-				newDoc.addOverlappedId(doc.getId());
-				doc.addOverlappedId(newDoc.getId());
-
-				doc.setDepth(doc.getDepth() + 1);
-				indexList.add(doc.getIndex());
+			/* check duplicate docs */
+			for(i=0; i<ScheduleContent.documents.size(); i++){
+				ScheduleContent doc = ScheduleContent.documents.get(i);
+				int startMinutes = (doc.getStartTime().getHours() * 60) + doc.getStartTime().getMinutes();
+				int endMinutes = (doc.getEndTime().getHours() * 60) + doc.getEndTime().getMinutes();
+	
+				if((doc.isSameDay(currentDate.getTime()) && 
+					! doc.isStatus(ScheduleContent.Allday) && 
+					(doc.isJustSameDay(startTime) || doc.isJustSameDay(endTime)))
+						&&
+					(((regStartMinutes >= startMinutes) && (regStartMinutes < endMinutes)) ||
+					((regEndMinutes > startMinutes) && (regEndMinutes < endMinutes)) ||
+					((regStartMinutes < startMinutes) && (regEndMinutes > endMinutes)) ||
+					(! checkSameDate(endTime, doc.getEndTime()) && checkSameDate(endTime, doc.getStartTime()) && (regEndMinutes > startMinutes)) ||
+					(! checkSameDate(startTime, doc.getStartTime()) && checkSameDate(startTime, doc.getEndTime()) && (regStartMinutes > endMinutes)))
+				){
+					newDoc.addOverlappedId(doc.getId());
+					doc.addOverlappedId(newDoc.getId());
+	
+					doc.setDepth(doc.getDepth() + 1);
+					indexList.add(doc.getIndex());
+				}
 			}
+
+		} else { /* check of allday event */
+			newDoc.setStatus(ScheduleContent.Allday);
 		}
 
 		int targetIndex = -1;

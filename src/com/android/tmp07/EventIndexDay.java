@@ -74,6 +74,20 @@ public class EventIndexDay extends Activity
 			startActivity(intent);
 		}
 	};
+	
+	OnClickListener selectAlldayBoard = new View.OnClickListener() {
+		public void onClick(View v) {
+			Intent intent = new Intent(EventIndexDay.this, EventListView.class);
+			Calendar sendCal = (Calendar) currentDate.clone();
+		
+			sendCal.set(Calendar.MINUTE, 0);
+
+			intent.putExtra(EventListView.KEY_DATE, currentDate);
+			intent.putExtra(EventListView.KEY_STATUS, EventListView.statusAllEvents);
+
+			startActivityForResult(intent, 1);
+		}
+	};
 
 	/** Called when the activity is first created. */
 	@Override
@@ -203,6 +217,8 @@ public class EventIndexDay extends Activity
 	
 		/* clear all-day events on current board */
 		clearDocsBuffer();
+
+		alldayBoard.setOnClickListener(selectAlldayBoard);
 
 		for(int i=0; i<events.size(); i++) {
 			ScheduleContent doc = (ScheduleContent) events.get(i);
