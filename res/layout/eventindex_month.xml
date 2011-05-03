@@ -1,37 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:id="@+id/ev_month_main_board"
-	android:orientation="vertical"
+<FrameLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/evMonth_mainFrame"
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent"
-	>
-	<TextView 
-		android:id="@+id/ev_month_index_current_month"
-		android:layout_width="fill_parent" 
-		android:layout_height="wrap_content" 
-		android:gravity="center"
-		android:textSize="20sp"
-		android:background="@drawable/headline_date"
-		/>
-	<TableLayout
-		android:id="@+id/ev_month_index_main_board"
-		android:layout_width="fill_parent" 
-		android:layout_height="fill_parent" 
-		android:layout_below="@id/ev_month_index_current_month"
-		/>
-		<!--<TableRow-->
-			<!--android:id="@+id/ev_month_index_week_label"-->
-			<!--/>-->
-		<!--<TableRow-->
-			<!--android:id="@+id/ev_month_index_main_context"-->
-			<!-->-->
-			<!--<com.android.tmp12.EventViewMonth-->
-				<!--android:id="@+id/ev_month_index_listview"-->
-				<!--android:layout_width="fill_parent"-->
-				<!--android:layout_height="fill_parent"-->
-				<!--android:divider="#00000000"-->
-				<!--android:background="@color/board_background"-->
-				<!--/>-->
-		<!--</TableRow>-->
-	<!--</TableLayout>-->
-</RelativeLayout>
+	/>

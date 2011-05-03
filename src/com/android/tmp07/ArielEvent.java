@@ -9,6 +9,9 @@ import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.MotionEvent;
 import android.view.Gravity;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.Animation.AnimationListener;
 
 import android.widget.RelativeLayout;
 import android.widget.LinearLayout;
@@ -20,6 +23,7 @@ import android.widget.TextView;
 
 import android.graphics.Color;
 
+import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
@@ -33,6 +37,8 @@ public class ArielEvent extends Activity
 {
 	private static final String[] weekLabelJp = {"月", "火", "水", "木", "金", "土", "日"};
 	private static final String TAG = "Tmp12";
+	private static final int FP = ViewGroup.LayoutParams.FILL_PARENT;
+	private static final int WC = ViewGroup.LayoutParams.WRAP_CONTENT;
 
 	/* current activity status */
 	private static int statusSuspend = 0;
@@ -41,8 +47,6 @@ public class ArielEvent extends Activity
 
 	private float motionX;
 	private int motionStatus = 0;
-
-	private LinkedList<TableRow> contents = new LinkedList<TableRow>();
 
 	protected final Calendar currentDate = Calendar.getInstance();
 
@@ -53,6 +57,10 @@ public class ArielEvent extends Activity
 	private static final float columnSize = 20f;
 	private static final float outsideColumnSize = 15f;
 
+	/* following member is used at board-switch */
+	private ObjectContainer currentContainer;
+	private ObjectContainer replaceContainer;
+	
 	private int activityStatus;
 
 	OnTouchListener moveMonthMotion = new OnTouchListener() {
@@ -97,15 +105,14 @@ public class ArielEvent extends Activity
 		super.onResume();
 
 		if(activityStatus == statusSuspend){
-			TableLayout mainBoard = (TableLayout) findViewById(R.id.ev_month_index_main_board);
-			int length = contents.size();
+			FrameLayout mainFrame = (FrameLayout) findViewById(R.id.evMonth_mainFrame);
+
+			mainFrame.removeView(currentContainer.canvas);
 	
-			for(int i=0; i<length; i++){
-				mainBoard.removeView(contents.get(i));
-			}
-	
-			contents.clear();
-			constructScreen();
+			currentContainer.contents.clear();
+		
+			currentContainer = initFrameLayout();
+			constructScreen(currentContainer);
 
 			activityStatus = statusActive;
 		}
@@ -123,49 +130,56 @@ public class ArielEvent extends Activity
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.eventindex_month);
-
-		try {
-			findViewById(R.id.ev_month_main_board).setOnTouchListener(moveMonthMotion);
-		} catch (Exception e) {
-			Log.d(TAG, "[onCreate] ERROR:"+e.getMessage());
-		}
-
-		/*to set name of each weekday */
-		generateWeekLabel();
-
-		constructScreen();
+	
+		/* initialize current FrameLayout */
+		currentContainer = initFrameLayout();
+		constructScreen(currentContainer);
 
 		activityStatus = statusActive;
 	}
 
-	private void constructScreen() {
+	private void constructScreen(ObjectContainer container) {
+
 		/*to set date label "${year} / ${month}" */
-		setDateLabel();
+		setDateLabel(container.canvas);
 
 		/* 
 		 * Main processing to show each day column.
 		 * NOTE: Now, the View is replaced into alternative which is TextView. 
 		 * 
 		 */
-		generateMonthView();
+		generateMonthView(container.canvas, container.contents);
 	}
 
-	private void setDateLabel() {
-		try {
-			TextView currentDateView = (TextView) findViewById(R.id.ev_month_index_current_month);
-	
-			currentDateView.setTextColor(getResources().getColor(R.color.normal_text));
-			currentDateView.setText(String.format("%d/%02d",
-						currentDate.get(Calendar.YEAR),
-						currentDate.get(Calendar.MONTH) + 1));
-		} catch (Exception e) {
-			Log.e(TAG, "[setDateLabel] ERROR:"+e.getMessage());
-		}
+	private ObjectContainer initFrameLayout() {
+		FrameLayout mainFrame = (FrameLayout) findViewById(R.id.evMonth_mainFrame);
+		ObjectContainer container = new ObjectContainer(this);
+
+		container.canvas.setOrientation(LinearLayout.VERTICAL);
+		container.canvas.setVisibility(View.VISIBLE);
+
+		mainFrame.addView(container.canvas, new ViewGroup.LayoutParams(FP, FP));
+
+		return container;
 	}
 
-	private void generateMonthView() {
+	private void setDateLabel(LinearLayout canvas) {
+		TextView currentDateView = new TextView(this);
+
+		currentDateView.setGravity(Gravity.CENTER);
+		currentDateView.setTextSize(24f);
+		currentDateView.setBackgroundResource(R.drawable.headline_date);
+		currentDateView.setTextColor(getResources().getColor(R.color.normal_text));
+		currentDateView.setText(String.format("%d/%02d",
+					currentDate.get(Calendar.YEAR),
+					currentDate.get(Calendar.MONTH) + 1));
+
+		canvas.addView(currentDateView, new ViewGroup.LayoutParams(FP, WC));
+	}
+
+	private void generateMonthView(LinearLayout canvas, LinkedList<TableRow> contents) {
 		try {
-			TableLayout mainBoard = (TableLayout) findViewById(R.id.ev_month_index_main_board);
+			TableLayout mainBoard = new TableLayout(this);
 			Calendar tmpCal = (Calendar) currentDate.clone();
 			Calendar now = Calendar.getInstance();
 			boolean lastMonthFlag = true;
@@ -179,9 +193,9 @@ public class ArielEvent extends Activity
 			mainBoard.setStretchAllColumns(true);
 			tmpCal.set(Calendar.DAY_OF_MONTH, 1);
 			weekCount = tmpCal.get(Calendar.DAY_OF_WEEK);
-	
-			Log.d(TAG, "[generateYearView] currentYear:"+tmpCal.getTime().getYear());
-			Log.d(TAG, "[generateMonthView] currentMonth:"+tmpCal.getTime().getMonth());
+
+			/* This routine draws each week-label */
+			generateWeekLabel(mainBoard);
 	
 			for(int i=0; i<columnNum; i++){
 				TableRow weekRow = new TableRow(this);
@@ -222,7 +236,8 @@ public class ArielEvent extends Activity
 					
 						if((now.get(Calendar.MONTH) == tmpCal.get(Calendar.MONTH)) && 
 							(now.get(Calendar.YEAR) == tmpCal.get(Calendar.YEAR)) && 
-							(tmpCal.get(Calendar.DAY_OF_MONTH) == (now.get(Calendar.DAY_OF_MONTH)))) {
+							(tmpCal.get(Calendar.DAY_OF_MONTH) == (now.get(Calendar.DAY_OF_MONTH)))) 
+						{
 
 							TextView event = new TextView(this);
 
@@ -263,6 +278,8 @@ public class ArielEvent extends Activity
 	
 				mainBoard.addView(weekRow);
 			}
+		
+			canvas.addView(mainBoard, new ViewGroup.LayoutParams(FP, FP));
 		} catch (Exception e) {
 			Log.e(TAG, "[generateMonthView] ERROR:"+e.getMessage());
 		}
@@ -293,9 +310,8 @@ public class ArielEvent extends Activity
 		return retDays;
 	}
 
-	private void generateWeekLabel() {
+	private void generateWeekLabel(TableLayout mainBoard) {
 		try {
-			TableLayout mainBoard = (TableLayout) findViewById(R.id.ev_month_index_main_board);
 			mainBoard.setStretchAllColumns(true);
 	
 			TableRow labelRow = new TableRow(this);
@@ -305,7 +321,7 @@ public class ArielEvent extends Activity
 				tv.setText(weekLabelJp[i]);
 				tv.setTextSize(labelSize);
 				tv.setHeight(labelHeight);
-				tv.setBackgroundColor(Color.BLUE);
+				tv.setBackgroundColor(getResources().getColor(R.color.weeklabel_background));
 				tv.setGravity(Gravity.CENTER_HORIZONTAL);
 		
 				labelRow.addView(tv);
@@ -317,33 +333,52 @@ public class ArielEvent extends Activity
 	}
 
 	private void doMoveMonth(int direction) {
-		TableLayout mainBoard = (TableLayout) findViewById(R.id.ev_month_index_main_board);
+		FrameLayout mainFrame = (FrameLayout) findViewById(R.id.evMonth_mainFrame);
 		int currentMonth = currentDate.get(Calendar.MONTH);
 		int currentYear = currentDate.get(Calendar.YEAR);
-
-		int length = contents.size();
-		for(int i=0; i<length; i++){
-			mainBoard.removeView(contents.get(i));
-		}
-		contents.clear();
+		Animation currentSlide;
+		Animation replaceSlide;
 
 		if(direction > 0) {
 			if(++currentMonth > 11){
 				currentYear++;
 				currentMonth = 0;
 			}
+
+			currentSlide = AnimationUtils.loadAnimation(this, R.anim.slide_center2left);
+			replaceSlide = AnimationUtils.loadAnimation(this, R.anim.slide_right2center);
 			Log.d(TAG, "[onClick] clicked prev button");
 		} else {
 			if(--currentMonth < 0){
 				currentYear--;
 				currentMonth = 11;
 			}
+
+			currentSlide = AnimationUtils.loadAnimation(this, R.anim.slide_center2right);
+			replaceSlide = AnimationUtils.loadAnimation(this, R.anim.slide_left2center);
 			Log.d(TAG, "[onClick] clicked next button");
 		}
 
 		currentDate.set(Calendar.MONTH, currentMonth);
 		currentDate.set(Calendar.YEAR, currentYear);
 
-		constructScreen();
+		replaceContainer = initFrameLayout();
+		constructScreen(replaceContainer);
+
+		currentContainer.canvas.setAnimation(currentSlide);
+		replaceContainer.canvas.setAnimation(replaceSlide);
+
+		mainFrame.removeView(currentContainer.canvas);
+		currentContainer = replaceContainer;
 	}
+
+	class ObjectContainer {
+		public LinearLayout canvas;
+		public LinkedList<TableRow> contents;
+
+		ObjectContainer(Context context) {
+			this.canvas = new LinearLayout(context);
+			this.contents = new LinkedList<TableRow>();
+		}
+	};
 }

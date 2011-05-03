@@ -16,6 +16,7 @@
 
 	<color name="document_background">#8885fffb</color>
 
+	<color name="weeklabel_background">#ff727272</color>
 	<color name="outside_background">#ff838383</color>
 	<color name="weekday_background">#ffededed</color>
 	<color name="holiday_background">#ffcd8383</color>
