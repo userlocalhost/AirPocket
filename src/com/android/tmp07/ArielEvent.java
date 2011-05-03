@@ -12,6 +12,7 @@ import android.view.Gravity;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Animation.AnimationListener;
+import android.view.Display;
 
 import android.widget.RelativeLayout;
 import android.widget.LinearLayout;
@@ -30,6 +31,7 @@ import android.util.Log;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.Calendar;
+import java.util.ArrayList;
 import java.lang.Integer;
 import java.lang.Exception;
 
@@ -51,15 +53,15 @@ public class ArielEvent extends Activity
 	protected final Calendar currentDate = Calendar.getInstance();
 
 	/* View size parameter */
+	private static int columnHeight = 0;
 	private static final int labelHeight = 25;
-	private static final int columnHeight = 60;
 	private static final float labelSize = 18f;
+	private static final float dateTextSize = 24f;
 	private static final float columnSize = 20f;
 	private static final float outsideColumnSize = 15f;
 
 	/* following member is used at board-switch */
 	private ObjectContainer currentContainer;
-	private ObjectContainer replaceContainer;
 	
 	private int activityStatus;
 
@@ -89,7 +91,9 @@ public class ArielEvent extends Activity
 						Log.d(TAG, "[moveMonth] ERROR:"+exception.getMessage());
 					}
 				} else {
+					Log.d(TAG, "[moveMonthMotion] start doMoveMonth()");
 					doMoveMonth(motionStatus);
+					Log.d(TAG, "[moveMonthMotion] finish doMoveMonth()");
 				
 					motionX = e.getX();
 					motionStatus = 0;
@@ -99,6 +103,20 @@ public class ArielEvent extends Activity
 			return true;
 		}
 	};
+
+	public void testRoutine(int screenHeight) {
+		LinkedList<TextView> contents = currentContainer.contents;
+		this.columnHeight = (screenHeight - labelHeight) / 6;
+		
+		Log.d(TAG, String.format("[testRoutine] screenHeight:%d, columnHeight:%d", 
+					screenHeight, columnHeight));
+
+		for(int i=0; i<contents.size(); i++) {
+			TextView viewDay = contents.get(i);
+
+			viewDay.setHeight(columnHeight);
+		}
+	}
 
 	@Override
 	protected void onResume() {
@@ -167,7 +185,7 @@ public class ArielEvent extends Activity
 		TextView currentDateView = new TextView(this);
 
 		currentDateView.setGravity(Gravity.CENTER);
-		currentDateView.setTextSize(24f);
+		currentDateView.setTextSize(dateTextSize);
 		currentDateView.setBackgroundResource(R.drawable.headline_date);
 		currentDateView.setTextColor(getResources().getColor(R.color.normal_text));
 		currentDateView.setText(String.format("%d/%02d",
@@ -177,9 +195,9 @@ public class ArielEvent extends Activity
 		canvas.addView(currentDateView, new ViewGroup.LayoutParams(FP, WC));
 	}
 
-	private void generateMonthView(LinearLayout canvas, LinkedList<TableRow> contents) {
+	private void generateMonthView(LinearLayout canvas, LinkedList<TextView> contents) {
 		try {
-			TableLayout mainBoard = new TableLayout(this);
+			EventIndexMonthView mainBoard = new EventIndexMonthView(this);
 			Calendar tmpCal = (Calendar) currentDate.clone();
 			Calendar now = Calendar.getInstance();
 			boolean lastMonthFlag = true;
@@ -199,8 +217,6 @@ public class ArielEvent extends Activity
 	
 			for(int i=0; i<columnNum; i++){
 				TableRow weekRow = new TableRow(this);
-	
-				contents.add(weekRow);
 		
 				/*implementation for drawing last month*/
 				if(lastMonthFlag){
@@ -211,9 +227,12 @@ public class ArielEvent extends Activity
 						day.setBackgroundColor(getResources().getColor(R.color.outside_background));
 						day.setGravity(Gravity.CENTER_HORIZONTAL);
 						day.setTextSize(outsideColumnSize);
-						day.setHeight(columnHeight);
 						day.setPadding(0, (int)(columnSize-outsideColumnSize), 0, 0);
-	
+						if(columnHeight > 0) {
+							day.setHeight(columnHeight);
+						}
+
+						contents.add(day);
 						weekRow.addView(day);
 					}
 				}
@@ -228,10 +247,13 @@ public class ArielEvent extends Activity
 						day.setBackgroundColor(getResources().getColor(R.color.weekday_background));
 						day.setTextColor(getResources().getColor(R.color.normal_text));
 						day.setTextSize(columnSize);
-						day.setHeight(columnHeight);
 						day.setGravity(Gravity.CENTER_HORIZONTAL);
 						day.setOnTouchListener(moveMonthMotion);
+						if(columnHeight > 0) {
+							day.setHeight(columnHeight);
+						}
 
+						contents.add(day);
 						frameLayout.addView(day);
 					
 						if((now.get(Calendar.MONTH) == tmpCal.get(Calendar.MONTH)) && 
@@ -242,15 +264,23 @@ public class ArielEvent extends Activity
 							TextView event = new TextView(this);
 
 							event.setBackgroundResource(R.drawable.event_today);
-							event.setHeight(columnHeight);
+							event.setId(++idCount);
+							if(columnHeight > 0) {
+								event.setHeight(columnHeight);
+							}
 
+							contents.add(event);
 							frameLayout.addView(event);
 						}else if(ScheduleContent.isConformScheduleFromDate(tmpCal.getTime())) {
 							TextView event = new TextView(this);
 
 							event.setBackgroundResource(R.drawable.event_existence);
-							event.setHeight(columnHeight);
+							event.setId(++idCount);
+							if(columnHeight > 0) {
+								event.setHeight(columnHeight);
+							}
 
+							contents.add(event);
 							frameLayout.addView(event);
 						}
 		
@@ -265,10 +295,13 @@ public class ArielEvent extends Activity
 						day.setText(String.format("%s", dayCount++));
 						day.setBackgroundColor(getResources().getColor(R.color.outside_background));
 						day.setTextSize(outsideColumnSize);
-						day.setHeight(columnHeight);
 						day.setGravity(Gravity.CENTER_HORIZONTAL);
 						day.setPadding(0, (int)(columnSize-outsideColumnSize), 0, 0);
+						if(columnHeight > 0) {
+							day.setHeight(columnHeight);
+						}
 		
+						contents.add(day);
 						weekRow.addView(day);
 					}
 
@@ -334,6 +367,7 @@ public class ArielEvent extends Activity
 
 	private void doMoveMonth(int direction) {
 		FrameLayout mainFrame = (FrameLayout) findViewById(R.id.evMonth_mainFrame);
+		ObjectContainer replaceContainer = currentContainer;
 		int currentMonth = currentDate.get(Calendar.MONTH);
 		int currentYear = currentDate.get(Calendar.YEAR);
 		Animation currentSlide;
@@ -362,23 +396,35 @@ public class ArielEvent extends Activity
 		currentDate.set(Calendar.MONTH, currentMonth);
 		currentDate.set(Calendar.YEAR, currentYear);
 
-		replaceContainer = initFrameLayout();
-		constructScreen(replaceContainer);
+		currentContainer = initFrameLayout();
+		constructScreen(currentContainer);
 
-		currentContainer.canvas.setAnimation(currentSlide);
-		replaceContainer.canvas.setAnimation(replaceSlide);
-
-		mainFrame.removeView(currentContainer.canvas);
-		currentContainer = replaceContainer;
+		replaceContainer.canvas.setAnimation(currentSlide);
+		currentContainer.canvas.setAnimation(replaceSlide);
+		
+		mainFrame.removeView(replaceContainer.canvas);
+		replaceContainer = null;
 	}
 
-	class ObjectContainer {
+	class ObjectContainer implements Cloneable {
 		public LinearLayout canvas;
-		public LinkedList<TableRow> contents;
+		public LinkedList<TextView> contents;
 
 		ObjectContainer(Context context) {
 			this.canvas = new LinearLayout(context);
-			this.contents = new LinkedList<TableRow>();
+			this.contents = new LinkedList<TextView>();
+		}
+
+		public ObjectContainer clone() {
+			ObjectContainer r = null;
+
+			try {
+				r = (ObjectContainer)super.clone();
+			} catch (CloneNotSupportedException ce) {
+				ce.printStackTrace();
+			}
+
+			return r;
 		}
 	};
 }
