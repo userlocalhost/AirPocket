@@ -48,6 +48,6 @@ public class EventIndexMonthView extends TableLayout {
 	public void onSizeChanged(int w, int h, int oldw, int oldh) {
 		Log.d(TAG, "[onSizeChanged]");
 
-		this.index.testRoutine(h);
+		this.index.setFullscreen(w, h);
 	}
 }

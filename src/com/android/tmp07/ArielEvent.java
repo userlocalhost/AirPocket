@@ -45,7 +45,7 @@ public class ArielEvent extends Activity
 	/* current activity status */
 	private static int statusSuspend = 0;
 	private static int statusActive = 1;
-	private static final float moveThreashold = 100f;
+	private static final float moveThreashold = 30f;
 
 	private float motionX;
 	private int motionStatus = 0;
@@ -104,12 +104,9 @@ public class ArielEvent extends Activity
 		}
 	};
 
-	public void testRoutine(int screenHeight) {
+	public void setFullscreen(int screenWidth, int screenHeight) {
 		LinkedList<TextView> contents = currentContainer.contents;
 		this.columnHeight = (screenHeight - labelHeight) / 6;
-		
-		Log.d(TAG, String.format("[testRoutine] screenHeight:%d, columnHeight:%d", 
-					screenHeight, columnHeight));
 
 		for(int i=0; i<contents.size(); i++) {
 			TextView viewDay = contents.get(i);
@@ -200,6 +197,7 @@ public class ArielEvent extends Activity
 			EventIndexMonthView mainBoard = new EventIndexMonthView(this);
 			Calendar tmpCal = (Calendar) currentDate.clone();
 			Calendar now = Calendar.getInstance();
+			Display d = getWindowManager().getDefaultDisplay();
 			boolean lastMonthFlag = true;
 			boolean endOfMonth = false;
 			int columnNum = 6;
@@ -207,8 +205,11 @@ public class ArielEvent extends Activity
 			int dayCount = 1;
 			int daysOfMonth = getDaysOfMonth(tmpCal.get(Calendar.MONTH));
 			int daysOfLastMonth = getDaysOfMonth(tmpCal.get(Calendar.MONTH) - 1);
+			int columnWidth = (d.getWidth() / 7);
+			int columnWidthLeftover = (d.getWidth() % 7);
 
-			mainBoard.setStretchAllColumns(true);
+			//mainBoard.setStretchAllColumns(true);
+			mainBoard.setGravity(Gravity.CENTER);
 			tmpCal.set(Calendar.DAY_OF_MONTH, 1);
 			weekCount = tmpCal.get(Calendar.DAY_OF_WEEK);
 
@@ -228,6 +229,7 @@ public class ArielEvent extends Activity
 						day.setGravity(Gravity.CENTER_HORIZONTAL);
 						day.setTextSize(outsideColumnSize);
 						day.setPadding(0, (int)(columnSize-outsideColumnSize), 0, 0);
+						day.setWidth(columnWidth);
 						if(columnHeight > 0) {
 							day.setHeight(columnHeight);
 						}
@@ -242,15 +244,21 @@ public class ArielEvent extends Activity
 						FrameLayout frameLayout = new FrameLayout(this);
 						TextView day = new TextView(this);
 
-						day.setTag(dayCount);
+						//day.setTag(dayCount);
 						day.setText(String.format("%s", dayCount++));
 						day.setBackgroundColor(getResources().getColor(R.color.weekday_background));
 						day.setTextColor(getResources().getColor(R.color.normal_text));
 						day.setTextSize(columnSize);
 						day.setGravity(Gravity.CENTER_HORIZONTAL);
 						day.setOnTouchListener(moveMonthMotion);
+						day.setWidth(columnWidth);
+						day.setTag(new Integer(weekCount));
 						if(columnHeight > 0) {
 							day.setHeight(columnHeight);
+						}
+
+						if(weekCount == 7) {
+							day.setWidth(columnWidth + columnWidthLeftover);
 						}
 
 						contents.add(day);
@@ -264,9 +272,14 @@ public class ArielEvent extends Activity
 							TextView event = new TextView(this);
 
 							event.setBackgroundResource(R.drawable.event_today);
-							event.setId(++idCount);
+							event.setWidth(columnWidth);
+							event.setTag(new Integer(weekCount));
 							if(columnHeight > 0) {
 								event.setHeight(columnHeight);
+							}
+
+							if(weekCount == 7) {
+								event.setWidth(columnWidth + columnWidthLeftover);
 							}
 
 							contents.add(event);
@@ -275,9 +288,14 @@ public class ArielEvent extends Activity
 							TextView event = new TextView(this);
 
 							event.setBackgroundResource(R.drawable.event_existence);
-							event.setId(++idCount);
+							event.setWidth(columnWidth);
+							event.setTag(new Integer(weekCount));
 							if(columnHeight > 0) {
 								event.setHeight(columnHeight);
+							}
+
+							if(weekCount == 7) {
+								event.setWidth(columnWidth + columnWidthLeftover);
 							}
 
 							contents.add(event);
@@ -297,8 +315,14 @@ public class ArielEvent extends Activity
 						day.setTextSize(outsideColumnSize);
 						day.setGravity(Gravity.CENTER_HORIZONTAL);
 						day.setPadding(0, (int)(columnSize-outsideColumnSize), 0, 0);
+						day.setWidth(columnWidth);
+						day.setTag(new Integer(weekCount));
 						if(columnHeight > 0) {
 							day.setHeight(columnHeight);
+						}
+
+						if(weekCount == 7) {
+							day.setWidth(columnWidth + columnWidthLeftover);
 						}
 		
 						contents.add(day);
@@ -344,8 +368,9 @@ public class ArielEvent extends Activity
 	}
 
 	private void generateWeekLabel(TableLayout mainBoard) {
+		Display d = getWindowManager().getDefaultDisplay();
 		try {
-			mainBoard.setStretchAllColumns(true);
+			//mainBoard.setStretchAllColumns(true);
 	
 			TableRow labelRow = new TableRow(this);
 	
@@ -356,6 +381,7 @@ public class ArielEvent extends Activity
 				tv.setHeight(labelHeight);
 				tv.setBackgroundColor(getResources().getColor(R.color.weeklabel_background));
 				tv.setGravity(Gravity.CENTER_HORIZONTAL);
+				tv.setWidth(d.getWidth() / 7);
 		
 				labelRow.addView(tv);
 			}
