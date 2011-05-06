@@ -16,8 +16,14 @@
 
 	<color name="document_background">#8885fffb</color>
 
-	<color name="weeklabel_background">#ff727272</color>
+	<color name="weeklabel_background">#ff9e9e9e</color>
 	<color name="outside_background">#ff838383</color>
 	<color name="weekday_background">#ffededed</color>
-	<color name="holiday_background">#ffcd8383</color>
+
+	<color name="satuaday_background">#ffd0dcff</color>
+	<color name="satuaday_label">#ffafc4ff</color>
+	<color name="holiday_background">#ffffd0d0</color>
+	<color name="holiday_label">#ffffa3a3</color>
+	
+	<color name="selected_event">#ffe7ffb2</color>
 </resources>

@@ -37,8 +37,9 @@ import java.lang.Exception;
 
 public class ArielEvent extends Activity
 {
-	private static final String[] weekLabelJp = {"月", "火", "水", "木", "金", "土", "日"};
+	private static final String[] weekLabelJp = {"日", "月", "火", "水", "木", "金", "土"};
 	private static final String TAG = "Tmp12";
+
 	private static final int FP = ViewGroup.LayoutParams.FILL_PARENT;
 	private static final int WC = ViewGroup.LayoutParams.WRAP_CONTENT;
 
@@ -56,7 +57,7 @@ public class ArielEvent extends Activity
 	private static int columnHeight = 0;
 	private static final int labelHeight = 25;
 	private static final float labelSize = 18f;
-	private static final float dateTextSize = 24f;
+	private static final float dateTextSize = 20f;
 	private static final float columnSize = 20f;
 	private static final float outsideColumnSize = 15f;
 
@@ -67,8 +68,14 @@ public class ArielEvent extends Activity
 
 	OnTouchListener moveMonthMotion = new OnTouchListener() {
 		public boolean onTouch(View v, MotionEvent e) {
+			Integer backgroundColor = (Integer) v.getTag(R.string.keyBackgroundColor);
+
 			if(e.getAction() == MotionEvent.ACTION_DOWN) {
 				motionX = e.getX();
+
+				if(backgroundColor != null) {
+					v.setBackgroundColor(getResources().getColor(R.color.selected_event));
+				}
 			} else if(e.getAction() == MotionEvent.ACTION_MOVE) {
 				if((e.getX() - motionX) > moveThreashold) {
 					motionStatus = -1;
@@ -78,7 +85,8 @@ public class ArielEvent extends Activity
 			} else if(e.getAction() == MotionEvent.ACTION_UP) {
 				if(motionStatus == 0) {
 					try {
-						int numOfDay = (Integer) v.getTag();
+						int numOfDay = (Integer) v.getTag(R.string.keyWeekCount);
+
 						Calendar sendCal = (Calendar) currentDate.clone();
 						Intent intent = new Intent(ArielEvent.this, EventIndexDay.class);
 			
@@ -90,13 +98,15 @@ public class ArielEvent extends Activity
 					} catch(Exception exception) {
 						Log.d(TAG, "[moveMonth] ERROR:"+exception.getMessage());
 					}
-				} else {
-					Log.d(TAG, "[moveMonthMotion] start doMoveMonth()");
+				} else if((motionStatus == 1) || (motionStatus == -1)){
 					doMoveMonth(motionStatus);
-					Log.d(TAG, "[moveMonthMotion] finish doMoveMonth()");
 				
 					motionX = e.getX();
 					motionStatus = 0;
+			
+					if(backgroundColor != null) {
+						v.setBackgroundColor(backgroundColor);
+					}
 				}
 			}
 	
@@ -145,12 +155,37 @@ public class ArielEvent extends Activity
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.eventindex_month);
+
+		setHoliday();
 	
 		/* initialize current FrameLayout */
 		currentContainer = initFrameLayout();
 		constructScreen(currentContainer);
 
 		activityStatus = statusActive;
+	}
+
+	private void setHoliday() {
+		/* static case */
+		new Holiday(1, 1, "元旦");
+		new Holiday(2, 11, "建国記念日");
+		new Holiday(4, 29, "昭和の日");
+		new Holiday(5, 3, "憲法記念日");
+		new Holiday(5, 4, "みどりの日");
+		new Holiday(5, 5, "こどもの日");
+		new Holiday(11, 3, "文化の日");
+		new Holiday(11, 23, "勤労感謝の日");
+		new Holiday(12, 23, "天皇誕生日");
+
+		/* dynamic case */
+		new Holiday(1, 1, 1, "成人の日");
+		new Holiday(7, 2, 1, "海の日");
+		new Holiday(9, 2, 1, "敬老の日");
+		new Holiday(10, 1, 1, "体育の日");
+
+		/* special case */
+		new Holiday(Holiday.DayOfSpring , "春分の日");
+		new Holiday(Holiday.DayOfFall , "秋分の日");
 	}
 
 	private void constructScreen(ObjectContainer container) {
@@ -200,6 +235,7 @@ public class ArielEvent extends Activity
 			Display d = getWindowManager().getDefaultDisplay();
 			boolean lastMonthFlag = true;
 			boolean endOfMonth = false;
+			boolean isMarkupHoliday = false;
 			int columnNum = 6;
 			int weekCount;
 			int dayCount = 1;
@@ -224,10 +260,13 @@ public class ArielEvent extends Activity
 					lastMonthFlag = false;
 					for(int j=(weekCount-1); j>0; j--){
 						TextView day = new TextView(this);
+						int color = getResources().getColor(R.color.outside_background);
+
 						day.setText(String.format("%s", daysOfLastMonth - j + 1));
-						day.setBackgroundColor(getResources().getColor(R.color.outside_background));
+						day.setBackgroundColor(color);
 						day.setGravity(Gravity.CENTER_HORIZONTAL);
 						day.setTextSize(outsideColumnSize);
+						day.setOnTouchListener(moveMonthMotion);
 						day.setPadding(0, (int)(columnSize-outsideColumnSize), 0, 0);
 						day.setWidth(columnWidth);
 						if(columnHeight > 0) {
@@ -243,18 +282,36 @@ public class ArielEvent extends Activity
 					if(endOfMonth == false){
 						FrameLayout frameLayout = new FrameLayout(this);
 						TextView day = new TextView(this);
+						boolean isHoliday = Holiday.isHoliday(tmpCal.getTime());
+						int color;
 
-						//day.setTag(dayCount);
+						if(isHoliday || isMarkupHoliday || weekCount == 1) {
+							color = getResources().getColor(R.color.holiday_background);
+
+							if(! (isMarkupHoliday && (isHoliday || weekCount == 1))) {
+								isMarkupHoliday = false;
+							}
+						} else if(weekCount == 7) {
+							color = getResources().getColor(R.color.satuaday_background);
+						} else {
+							color = getResources().getColor(R.color.weekday_background);
+						}
+
+						day.setTag(R.string.keyWeekCount, new Integer(dayCount));
+						day.setTag(R.string.keyBackgroundColor, new Integer(color));
 						day.setText(String.format("%s", dayCount++));
-						day.setBackgroundColor(getResources().getColor(R.color.weekday_background));
+						day.setBackgroundColor(color);
 						day.setTextColor(getResources().getColor(R.color.normal_text));
 						day.setTextSize(columnSize);
 						day.setGravity(Gravity.CENTER_HORIZONTAL);
 						day.setOnTouchListener(moveMonthMotion);
 						day.setWidth(columnWidth);
-						day.setTag(new Integer(weekCount));
 						if(columnHeight > 0) {
 							day.setHeight(columnHeight);
+						}
+
+						if((weekCount == 1) && isHoliday) {
+							isMarkupHoliday = true;
 						}
 
 						if(weekCount == 7) {
@@ -263,22 +320,20 @@ public class ArielEvent extends Activity
 
 						contents.add(day);
 						frameLayout.addView(day);
-					
+				
 						if((now.get(Calendar.MONTH) == tmpCal.get(Calendar.MONTH)) && 
 							(now.get(Calendar.YEAR) == tmpCal.get(Calendar.YEAR)) && 
-							(tmpCal.get(Calendar.DAY_OF_MONTH) == (now.get(Calendar.DAY_OF_MONTH)))) 
+							(tmpCal.get(Calendar.DAY_OF_MONTH) == (now.get(Calendar.DAY_OF_MONTH))))
 						{
-
 							TextView event = new TextView(this);
 
 							event.setBackgroundResource(R.drawable.event_today);
 							event.setWidth(columnWidth);
-							event.setTag(new Integer(weekCount));
 							if(columnHeight > 0) {
 								event.setHeight(columnHeight);
 							}
 
-							if(weekCount == 7) {
+							if(weekCount == 1) {
 								event.setWidth(columnWidth + columnWidthLeftover);
 							}
 
@@ -289,12 +344,11 @@ public class ArielEvent extends Activity
 
 							event.setBackgroundResource(R.drawable.event_existence);
 							event.setWidth(columnWidth);
-							event.setTag(new Integer(weekCount));
 							if(columnHeight > 0) {
 								event.setHeight(columnHeight);
 							}
 
-							if(weekCount == 7) {
+							if(weekCount == 1) {
 								event.setWidth(columnWidth + columnWidthLeftover);
 							}
 
@@ -310,18 +364,20 @@ public class ArielEvent extends Activity
 						}
 					}else{
 						TextView day = new TextView(this);
+						int color = getResources().getColor(R.color.outside_background);
+
 						day.setText(String.format("%s", dayCount++));
-						day.setBackgroundColor(getResources().getColor(R.color.outside_background));
+						day.setBackgroundColor(color);
 						day.setTextSize(outsideColumnSize);
 						day.setGravity(Gravity.CENTER_HORIZONTAL);
+						day.setOnTouchListener(moveMonthMotion);
 						day.setPadding(0, (int)(columnSize-outsideColumnSize), 0, 0);
 						day.setWidth(columnWidth);
-						day.setTag(new Integer(weekCount));
 						if(columnHeight > 0) {
 							day.setHeight(columnHeight);
 						}
 
-						if(weekCount == 7) {
+						if(weekCount == 1) {
 							day.setWidth(columnWidth + columnWidthLeftover);
 						}
 		
@@ -378,10 +434,17 @@ public class ArielEvent extends Activity
 				TextView tv = new TextView(this);
 				tv.setText(weekLabelJp[i]);
 				tv.setTextSize(labelSize);
+				tv.setTextColor(getResources().getColor(R.color.normal_text));
 				tv.setHeight(labelHeight);
 				tv.setBackgroundColor(getResources().getColor(R.color.weeklabel_background));
 				tv.setGravity(Gravity.CENTER_HORIZONTAL);
 				tv.setWidth(d.getWidth() / 7);
+
+				if(i == 6) { /* for Satuaday */
+					tv.setBackgroundColor(getResources().getColor(R.color.satuaday_label));
+				} else if(i == 0) { /* for Sunday */
+					tv.setBackgroundColor(getResources().getColor(R.color.holiday_label));
+				}
 		
 				labelRow.addView(tv);
 			}

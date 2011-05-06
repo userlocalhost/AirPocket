@@ -11,4 +11,7 @@
 
 	<string name="edit_event">編集</string>
 	<string name="delete_event">削除</string>
+
+	<string name="keyWeekCount">key of weekCount</string>
+	<string name="keyBackgroundColor">key of backgroundColor</string>
 </resources>
