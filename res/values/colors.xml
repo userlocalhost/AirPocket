@@ -26,4 +26,7 @@
 	<color name="holiday_label">#ffffa3a3</color>
 	
 	<color name="selected_event">#ffe7ffb2</color>
+
+	<!--login page statistic value-->
+	<color name="loginpage_background_color">#ffffffff</color>
 </resources>

@@ -15,6 +15,7 @@
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
+		<activity android:name=".EventIndexMonth"/>
 		<activity android:name=".EventIndexDay"
 			android:label="@string/eventindex_day_title">
 		</activity>

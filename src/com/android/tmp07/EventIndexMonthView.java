@@ -9,18 +9,18 @@ import android.util.Log;
 public class EventIndexMonthView extends TableLayout {
 
 	private static final String TAG = "EventIndexMonthView";
-	private ArielEvent index;
+	private EventIndexMonth index;
 
 	public EventIndexMonthView(Context context){
 		super(context);
 
-		this.index = (ArielEvent) context;
+		this.index = (EventIndexMonth) context;
 	}
 
 	public EventIndexMonthView(Context context, AttributeSet attrs){
 		super(context, attrs);
 
-		this.index = (ArielEvent) context;
+		this.index = (EventIndexMonth) context;
 	}
 
 	@Override
