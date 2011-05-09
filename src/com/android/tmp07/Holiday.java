@@ -84,9 +84,19 @@ public class Holiday
 
 		holidayList.add(this);
 	}
-
+	
 	public static boolean isHoliday(Date date) {
 		boolean ret = false;
+
+		if(getHoliday(date) != null) {
+			ret = true;
+		}
+
+		return ret;
+	}
+
+	public static Holiday getHoliday(Date date) {
+		Holiday ret = null;
 		Calendar cal = Calendar.getInstance();
 		
 		for(int i=0; i<holidayList.size(); i++) {
@@ -106,12 +116,16 @@ public class Holiday
 				(((holiday.status & statusDayOfFall) > 0) && isDayOfFall(date))
 				))
 			{
-					ret = true;
+					ret = holiday;
 					break;
 			}
 		}
 
 		return ret;
+	}
+
+	public String getLabel() {
+		return this.label;
 	}
 
 	private static boolean isDayOfSpring(Date date) {

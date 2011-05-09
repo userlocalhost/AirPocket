@@ -28,7 +28,6 @@ public class EventIndexDay extends Activity
 	private static final int FP = ViewGroup.LayoutParams.FILL_PARENT;
 	private static final int WC = ViewGroup.LayoutParams.WRAP_CONTENT;
 	private static final String TAG = "EventIndexDay";
-	private static String currentDateString;
 
 	private LinkedList<TextView> docsBuffer = new LinkedList<TextView>();
 
@@ -191,12 +190,27 @@ public class EventIndexDay extends Activity
 		try {
 			TextView current_date = (TextView) findViewById(R.id.ev_day_index_current_date);
 			currentDate = (Calendar) getIntent().getSerializableExtra(KEY_DATE);
+			Holiday holiday = Holiday.getHoliday(currentDate.getTime());
 	
-			currentDateString = String.format("%04d/%02d/%02d", 
+			String currentDateString = String.format("%04d/%02d/%02d", 
+					currentDate.get(Calendar.YEAR),
+					currentDate.get(Calendar.MONTH) + 1,
+					currentDate.get(Calendar.DAY_OF_MONTH));
+
+			if(holiday != null) {
+				currentDateString = String.format("%04d/%02d/%02d (%s)", 
 						currentDate.get(Calendar.YEAR),
 						currentDate.get(Calendar.MONTH) + 1,
-						currentDate.get(Calendar.DAY_OF_MONTH));
-	
+						currentDate.get(Calendar.DAY_OF_MONTH),
+						holiday.getLabel());
+
+				current_date.setBackgroundResource(R.drawable.headline_date_holiday);
+			} else if(currentDate.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+				current_date.setBackgroundResource(R.drawable.headline_date_holiday);
+			} else if(currentDate.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) {
+				current_date.setBackgroundResource(R.drawable.headline_date_satuaday);
+			}
+
 			current_date.setTextColor(getResources().getColor(R.color.date_text));
 			current_date.setText(currentDateString);
 
