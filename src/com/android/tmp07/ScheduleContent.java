@@ -60,22 +60,11 @@ public class ScheduleContent
 
 	public boolean isSameDay(Date cmpDay) {
 		boolean ret = false;
-		Date date = (Date) cmpDay.clone();
-		Date startDate = (Date) startTime.clone();
-		Date endDate = (Date) endTime.clone();
+		int startDays = (this.startTime.getYear() * 400) + (this.startTime.getMonth() * 31) + this.startTime.getDate();
+		int endDays = (this.endTime.getYear() * 400) + (this.endTime.getMonth() * 31) + this.endTime.getDate();
+		int cmpDays = (cmpDay.getYear() * 400) + (cmpDay.getMonth() * 31) + cmpDay.getDate();
 
-		/* reset date object */
-		date.setMinutes(0);
-		date.setHours(0);
-		startDate.setMinutes(0);
-		startDate.setHours(0);
-		endDate.setMinutes(0);
-		endDate.setHours(0);
-
-		if((startDate.compareTo(date) == 0) ||
-			(endDate.compareTo(date) == 0) ||
-			((startDate.compareTo(date) < 0) && endDate.compareTo(date) > 0)) {
-
+		if((startDays == cmpDays) || (endDays == cmpDays) || ((startDays <= cmpDays) && (cmpDays <= endDays))) {
 			ret = true;
 		}
 
@@ -332,7 +321,7 @@ public class ScheduleContent
 					break;
 				}
 			}
-		}while(findFlag == 0);
+		} while(findFlag == 0);
 
 		this.setPosition(indexList.size(), targetIndex);
 
