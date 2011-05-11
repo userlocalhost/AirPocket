@@ -259,75 +259,23 @@ public class EditEvent extends Activity
 	}
 
 	private void makeDocument(Date startTime, Date endTime) {
-		ArrayList indexList = new ArrayList();
-
 		CheckBox checkAllDay = (CheckBox) findViewById(R.id.check_allday);
-		int i, depth, position;
-		int regStartMinutes = (startTime.getHours() * 60) + startTime.getMinutes();
-		int regEndMinutes = (endTime.getHours() * 60) + endTime.getMinutes();
 
 		ScheduleContent newDoc = new ScheduleContent(
 					((TextView) findViewById(R.id.subject_input)).getText().toString(),
 					((TextView) findViewById(R.id.context_input)).getText().toString(),
 					startTime, endTime);
 
-		newDoc.setPosition(0, 0);
-
 		/* Is newDoc across multiple days */
 		if(! checkSameDate(startTime, endTime)) {
 			newDoc.setStatus(ScheduleContent.Multiday);
 		}
 
-		if(! checkAllDay.isChecked()) {
-
-			/* check duplicate docs */
-			for(i=0; i<ScheduleContent.documents.size(); i++){
-				ScheduleContent doc = ScheduleContent.documents.get(i);
-				int startMinutes = (doc.getStartTime().getHours() * 60) + doc.getStartTime().getMinutes();
-				int endMinutes = (doc.getEndTime().getHours() * 60) + doc.getEndTime().getMinutes();
-	
-				if((doc.isSameDay(currentDate.getTime()) && 
-					! doc.isStatus(ScheduleContent.Allday) && 
-					(doc.isJustSameDay(startTime) || doc.isJustSameDay(endTime)))
-						&&
-					(((regStartMinutes >= startMinutes) && (regStartMinutes < endMinutes)) ||
-					((regEndMinutes > startMinutes) && (regEndMinutes < endMinutes)) ||
-					((regStartMinutes < startMinutes) && (regEndMinutes > endMinutes)) ||
-					(! checkSameDate(endTime, doc.getEndTime()) && checkSameDate(endTime, doc.getStartTime()) && (regEndMinutes > startMinutes)) ||
-					(! checkSameDate(startTime, doc.getStartTime()) && checkSameDate(startTime, doc.getEndTime()) && (regStartMinutes > endMinutes)))
-				){
-					newDoc.addOverlappedId(doc.getId());
-					doc.addOverlappedId(newDoc.getId());
-	
-					doc.setDepth(doc.getDepth() + 1);
-					indexList.add(doc.getIndex());
-				}
-			}
-
-		} else { /* check of allday event */
+		if(checkAllDay.isChecked()) {
 			newDoc.setStatus(ScheduleContent.Allday);
 		}
 
-		int targetIndex = -1;
-		int findFlag;
-		do{
-			findFlag = 1;
-
-			targetIndex++;
-
-			Log.d(TAG, "[makeScheduleFromResult] targetIndex : "+targetIndex);
-			for(i=0; i<indexList.size(); i++){
-				Log.d(TAG, String.format("[makeScheduleFromResult] %d:%d", i, indexList.get(i)));
-				if(targetIndex == indexList.get(i)){
-					findFlag = 0;
-					break;
-				}
-			}
-		}while(findFlag == 0);
-
-		newDoc.setPosition(indexList.size(), targetIndex);
-
-		ScheduleContent.documents.add(newDoc);
+		newDoc.regist();
 	}
 
 	private void updateDocument() {

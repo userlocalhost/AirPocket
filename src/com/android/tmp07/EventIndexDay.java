@@ -103,69 +103,10 @@ public class EventIndexDay extends Activity
 		super.onActivityResult(requestCode, resultCode, data);
 
 		if(requestCode == EditEvent.StatusEdit && resultCode == RESULT_OK){
-			//makeScheduleFromResult(data);
+			// nope
 		}
 
 		redrawAlldayEvents();
-	}
-
-	private void makeScheduleFromResult(Intent data) {
-		Date startTime = (Date) data.getSerializableExtra(EditEvent.KEY_STARTTIME);
-		Date endTime = (Date) data.getSerializableExtra(EditEvent.KEY_ENDTIME);
-
-		LinkedList<ScheduleContent> duplicateDocs = new LinkedList<ScheduleContent>();
-		ArrayList indexList = new ArrayList();
-
-		int i, depth, position;
-		int regStartMinutes = (startTime.getHours() * 60) + startTime.getMinutes();
-		int regEndMinutes = (endTime.getHours() * 60) + endTime.getMinutes();
-
-		ScheduleContent newDoc = new ScheduleContent(
-					data.getStringExtra(EditEvent.KEY_SUBJECT),
-					data.getStringExtra(EditEvent.KEY_CONTEXT),
-					startTime, endTime);
-
-		newDoc.setPosition(0, 0);
-
-		Log.d(TAG, String.format("[makeScheduleFromResult] regtime:(%d,%d)", regStartMinutes, regEndMinutes));
-
-		/* check duplicate docs */
-		for(i=0; i<ScheduleContent.documents.size(); i++){
-			ScheduleContent doc = ScheduleContent.documents.get(i);
-			if(doc.isSameDay(currentDate.getTime())) {
-				int startMinutes = (doc.getStartTime().getHours() * 60) + doc.getStartTime().getMinutes();
-				int endMinutes = (doc.getEndTime().getHours() * 60) + doc.getEndTime().getMinutes();
-
-				Log.d(TAG, String.format("[makeScheduleFromResult] prev[%d]:(%d,%d)", i, startMinutes, endMinutes));
-				if(((regStartMinutes >= startMinutes) && (regStartMinutes < endMinutes)) ||
-					((regEndMinutes > startMinutes) && (regEndMinutes < endMinutes))) {
-
-					doc.setDepth(doc.getDepth() + 1);
-					indexList.add(doc.getIndex());
-				}
-			}
-		}
-
-		int targetIndex = -1;
-		int findFlag;
-		do{
-			findFlag = 1;
-
-			targetIndex++;
-
-			Log.d(TAG, "[makeScheduleFromResult] targetIndex : "+targetIndex);
-			for(i=0; i<indexList.size(); i++){
-				Log.d(TAG, String.format("[makeScheduleFromResult] %d:%d", i, indexList.get(i)));
-				if(targetIndex == indexList.get(i)){
-					findFlag = 0;
-					break;
-				}
-			}
-		}while(findFlag == 0);
-
-		newDoc.setPosition(indexList.size(), targetIndex);
-
-		ScheduleContent.documents.add(newDoc);
 	}
 
 	protected void showEditActivity(int hour, int minute) {

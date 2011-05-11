@@ -17,7 +17,7 @@ public class ScheduleContent
 	private static final String TAG = "ScheduleContent";
 	private ArrayList overlappedDocumentId = new ArrayList(); 
 
-	private UUID id;
+	private String id;
 	private String subject;
 	private String context;
 	private Date startTime;
@@ -26,14 +26,19 @@ public class ScheduleContent
 
 	private int index;
 	private int depth;
+	
+	ScheduleContent() {
+		this.status = 0;
+		this.id = UUID.randomUUID().toString();
+	}
 
 	ScheduleContent(String subject, String summary, Date start, Date end) {
 		this.subject = subject;
 		this.context = summary;
 		this.startTime = start;
 		this.endTime = end;
-
-		this.id = UUID.randomUUID();
+		this.status = 0;
+		this.id = UUID.randomUUID().toString();
 	}
 
 	/* This is a assistant method */
@@ -95,7 +100,7 @@ public class ScheduleContent
 		for(i=0; i<documents.size(); i++) {
 			ScheduleContent doc = documents.get(i);
 
-			if(doc.id.compareTo(this.id) == 0) {
+			if(doc.id.equals(this.id)) {
 				documents.remove(i);
 			}
 		}
@@ -203,7 +208,7 @@ public class ScheduleContent
 		for(int i=0; i<documents.size(); i++) {
 			ScheduleContent doc = documents.get(i);
 
-			if(doc.id.toString().equals(uuidStr)) {
+			if(doc.id.equals(uuidStr)) {
 				ret = doc;
 				break;
 			}
@@ -242,6 +247,10 @@ public class ScheduleContent
 		this.context = str;
 	}
 
+	public void setId(String id) {
+		this.id = id;
+	}
+
 	public void setStatus(int status) {
 		this.status |= status;
 	}
@@ -271,11 +280,63 @@ public class ScheduleContent
 	}
 
 	public String getId() {
-		return this.id.toString();
+		return this.id;
 	}
 
 	public boolean isStatus(int status) {
 		return ((this.status & status) > 0);
+	}
+
+	public void regist() {
+		ArrayList indexList = new ArrayList();
+		int regStartMinutes = (this.startTime.getHours() * 60) + this.startTime.getMinutes();
+		int regEndMinutes = (this.endTime.getHours() * 60) + this.endTime.getMinutes();
+		
+		this.setPosition(0, 0);
+
+		/* check duplicate docs */
+		for(int i=0; i<ScheduleContent.documents.size(); i++){
+			ScheduleContent doc = ScheduleContent.documents.get(i);
+			int startMinutes = (doc.getStartTime().getHours() * 60) + doc.getStartTime().getMinutes();
+			int endMinutes = (doc.getEndTime().getHours() * 60) + doc.getEndTime().getMinutes();
+
+			if((! doc.isStatus(ScheduleContent.Allday) && 
+				(doc.isJustSameDay(startTime) || doc.isJustSameDay(endTime)))
+					&&
+				(((regStartMinutes >= startMinutes) && (regStartMinutes < endMinutes)) ||
+				((regEndMinutes > startMinutes) && (regEndMinutes < endMinutes)) ||
+				((regStartMinutes < startMinutes) && (regEndMinutes > endMinutes)) ||
+				(! checkSameDate(endTime, doc.getEndTime()) && checkSameDate(endTime, doc.getStartTime()) && (regEndMinutes > startMinutes)) ||
+				(! checkSameDate(startTime, doc.getStartTime()) && checkSameDate(startTime, doc.getEndTime()) && (regStartMinutes > endMinutes)))
+			){
+				this.addOverlappedId(doc.getId());
+				doc.addOverlappedId(this.getId());
+
+				doc.setDepth(doc.getDepth() + 1);
+				indexList.add(doc.getIndex());
+			}
+		}
+
+		int targetIndex = -1;
+		int findFlag;
+		do{
+			findFlag = 1;
+
+			targetIndex++;
+
+			Log.d(TAG, "[regist] targetIndex : "+targetIndex);
+			for(int i=0; i<indexList.size(); i++){
+				Log.d(TAG, String.format("[regist] %d:%d", i, indexList.get(i)));
+				if(targetIndex == indexList.get(i)){
+					findFlag = 0;
+					break;
+				}
+			}
+		}while(findFlag == 0);
+
+		this.setPosition(indexList.size(), targetIndex);
+
+		documents.add(this);
 	}
 
 	/* private processing */
