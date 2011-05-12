@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 
+import android.widget.EditText;
+
 import android.content.Intent;
 import android.util.Log;
 
@@ -20,14 +22,12 @@ public class ArielEvent extends Activity
 {
 	private static final String TAG = "ArielEvent";
 
-	public static final String InfoFilepath = "/sdcard/ArielMultiScheduler/logininfo.txt";
-
 	OnClickListener clickEvent = new View.OnClickListener() {
 		public void onClick(View v) {
 
 			Log.d(TAG, "[clickEvent]");
 
-			File file = new File(InfoFilepath);
+			File file = new File(ServerInterface.InfoFilepath);
 			if(! file.exists()) {
 				Log.d(TAG, "hogehoge.txt is NOT existed");
 	
@@ -37,14 +37,21 @@ public class ArielEvent extends Activity
 					FileOutputStream fos = new FileOutputStream(file, true);
 					OutputStreamWriter osw = new OutputStreamWriter(fos, "UTF-8");
 					BufferedWriter bw = new BufferedWriter(osw);
-					
-					bw.write("ファイル書き込みテスト");
+
+					String inputEmail = ((EditText) findViewById(R.id.editEmail)).getText().toString();
+					String inputPasswd = ((EditText) findViewById(R.id.editPasswd)).getText().toString();
+
+					Log.d(TAG, String.format("[onClick] email:%s, passwd:%s", inputEmail, inputPasswd));
+				
+					bw.write(String.format("email=%s\npasswd=%s", inputEmail, inputPasswd));
 					bw.flush();
 					bw.close();
 				} catch(IOException e) {
 					Log.e(TAG, e.getMessage());
 				}
 			}
+
+			new ServerInterface();
 
 			openEventIndex();
 		}
@@ -57,7 +64,7 @@ public class ArielEvent extends Activity
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.login_page);
 
-		File file = new File(InfoFilepath);
+		File file = new File(ServerInterface.InfoFilepath);
 		if(file.exists()) {
 			openEventIndex();
 		} else {

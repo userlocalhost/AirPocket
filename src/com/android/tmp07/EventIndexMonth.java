@@ -158,8 +158,12 @@ public class EventIndexMonth extends Activity
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		ServerInterface serverInterface = new ServerInterface();
+
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.eventindex_month);
+
+		serverInterface.doSync(this);
 
 		setHoliday();
 	
@@ -188,7 +192,7 @@ public class EventIndexMonth extends Activity
 			case R.id.menuLogout:
 				Log.d(TAG, "[onOptionsItemSelected] menuLogout is selected");
 
-				File file = new File(ArielEvent.InfoFilepath);
+				File file = new File(ServerInterface.InfoFilepath);
 				if(file.exists()) {
 					Log.d(TAG, "[clickEvent] do delete file");
 	
