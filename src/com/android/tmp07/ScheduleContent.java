@@ -20,6 +20,7 @@ public class ScheduleContent
 	private String id;
 	private String subject;
 	private String context;
+	private String resourceLabel;
 	private Date startTime;
 	private Date endTime;
 	private int status;
@@ -30,6 +31,7 @@ public class ScheduleContent
 	ScheduleContent() {
 		this.status = 0;
 		this.id = UUID.randomUUID().toString();
+		this.resourceLabel = null;
 	}
 
 	ScheduleContent(String subject, String summary, Date start, Date end) {
@@ -39,6 +41,7 @@ public class ScheduleContent
 		this.endTime = end;
 		this.status = 0;
 		this.id = UUID.randomUUID().toString();
+		this.resourceLabel = null;
 	}
 
 	/* This is a assistant method */
@@ -244,6 +247,10 @@ public class ScheduleContent
 		this.status |= status;
 	}
 
+	public void setResourceLabel(String label) {
+		this.resourceLabel = label;
+	}
+
 	public Date getStartTime() {
 		return this.startTime;
 	}
@@ -266,6 +273,10 @@ public class ScheduleContent
 
 	public String getContext() {
 		return this.context;
+	}
+
+	public String getResourceLabel() {
+		return this.resourceLabel;
 	}
 
 	public String getId() {

@@ -29,4 +29,5 @@
 
 	<!--login page statistic value-->
 	<color name="loginpage_background_color">#ffffffff</color>
+	<color name="background_white">#ffffffff</color>
 </resources>

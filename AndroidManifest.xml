@@ -28,6 +28,9 @@
 		<activity android:name=".EventViewer"
 			android:label="@string/eventviewer_title">
 		</activity>
+		<activity android:name="EditLabel"
+		 android:label="@string/app_name"
+		 android:theme="@android:style/Theme.Dialog"/>
 	</application>
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 	<uses-permission android:name="android.permission.INTERNET" />

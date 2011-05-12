@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.ImageView;
 
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -45,9 +46,12 @@ public class EditEvent extends Activity
 		"com.android.tmp07.editevent.starttime";
 	public static final String KEY_ENDTIME =
 		"com.android.tmp07.editevent.endtime";
+	public static final String KEY_LABEL_RESOURCEID =
+		"com.android.tmp07.editevent.label_resourceid";
 
 	public static final int StatusEdit = 1<<0;
 	public static final int StatusAllday = 1<<1;
+	public static final int StatusEditLabel = 1<<2;
 
 	private static final String TAG = "EditEvent";
 	private static final String TIME_CONFIG_ALERT = "終了時刻が開始時刻の前に設定されています。";
@@ -58,6 +62,7 @@ public class EditEvent extends Activity
 
 	private int requestStatus;
 	private ScheduleContent document;
+	private String resourceLabel = null;
 
 	OnCheckedChangeListener checkAllDay = new CompoundButton.OnCheckedChangeListener() {
 		public void onCheckedChanged(CompoundButton button, boolean isChecked) {
@@ -113,6 +118,14 @@ public class EditEvent extends Activity
 			finish();
 		}
 	};
+
+	OnClickListener labelSelect = new View.OnClickListener(){
+		public void onClick(View v){
+			Intent intent = new Intent(EditEvent.this, EditLabel.class);
+
+			startActivityForResult(intent, StatusEditLabel);
+		}
+	};
 	
 	DatePickerDialog.OnDateSetListener startDateEvent = new DatePickerDialog.OnDateSetListener(){
 		public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth){
@@ -151,6 +164,28 @@ public class EditEvent extends Activity
 			updateTimeDisplay(endTime, R.id.end_time);
 		}
 	};
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data)
+	{
+		super.onActivityResult(requestCode, resultCode, data);
+
+		Log.d(TAG, String.format("[onActivityResult]"));
+
+		if((requestCode == StatusEditLabel) && (resultCode == RESULT_OK)){
+			ImageView labelImage = (ImageView) findViewById(R.id.show_label);
+			int resourceId;
+
+			resourceLabel = data.getStringExtra(KEY_LABEL_RESOURCEID);
+
+			Log.d(TAG, String.format("[onActivityResult] label : %s", resourceLabel));
+
+			resourceId = getResources().getIdentifier(resourceLabel, "drawable", "com.android.tmp07");
+			labelImage.setImageResource(resourceId);
+			labelImage.setAdjustViewBounds(true);
+			labelImage.invalidate();
+		}
+	}
 
 	/** Called when the activity is first created. */
 	@Override
@@ -182,14 +217,25 @@ public class EditEvent extends Activity
 		((CheckBox) findViewById(R.id.check_allday)).setOnCheckedChangeListener(checkAllDay);
 
 		if((requestStatus & StatusEdit) > 0) {
-			document = ScheduleContent.getFromId(
-					getIntent().getStringExtra(KEY_OBJID));
+			document = ScheduleContent.getFromId(getIntent().getStringExtra(KEY_OBJID));
 
 			((TextView) findViewById(R.id.subject_input)).setText(document.getSubject());
 			((TextView) findViewById(R.id.context_input)).setText(document.getContext());
 
 			startTime.setTime(document.getStartTime());
 			endTime.setTime(document.getEndTime());
+
+			resourceLabel = document.getResourceLabel();
+			if(resourceLabel != null) {
+				int resourceId = getResources().getIdentifier(resourceLabel, "drawable", "com.android.tmp07");
+				ImageView labelImage = (ImageView) findViewById(R.id.show_label);
+
+				labelImage.setImageResource(resourceId);
+				labelImage.setAdjustViewBounds(true);
+				labelImage.invalidate();
+			}
+			
+			int resourceId = getResources().getIdentifier(resourceLabel, "drawable", "com.android.tmp07");
 		}
 
 		if((requestStatus & StatusAllday) > 0) {
@@ -201,6 +247,9 @@ public class EditEvent extends Activity
 		
 		updateDateDisplay(startTime, R.id.start_date);
 		updateDateDisplay(endTime, R.id.end_date);
+
+		/* initialization of edit-label */
+		findViewById(R.id.edit_label_button).setOnClickListener(labelSelect);
 	}
 
 	private void initButtonEvent() {
@@ -273,6 +322,10 @@ public class EditEvent extends Activity
 
 		if(checkAllDay.isChecked()) {
 			newDoc.setStatus(ScheduleContent.Allday);
+		}
+
+		if(resourceLabel != null) {
+			newDoc.setResourceLabel(resourceLabel);
 		}
 
 		newDoc.regist();

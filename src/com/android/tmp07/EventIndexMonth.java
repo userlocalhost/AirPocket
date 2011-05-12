@@ -21,9 +21,10 @@ import android.widget.RelativeLayout;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.FrameLayout;
-
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
 
 import android.graphics.Color;
 
@@ -326,6 +327,7 @@ public class EventIndexMonth extends Activity
 						FrameLayout frameLayout = new FrameLayout(this);
 						TextView day = new TextView(this);
 						boolean isHoliday = Holiday.isHoliday(tmpCal.getTime());
+						ArrayList documents = ScheduleContent.grepScheduleFromDate(tmpCal.getTime());
 						int color;
 
 						if(isHoliday || isMarkupHoliday || weekCount == 1) {
@@ -382,7 +384,7 @@ public class EventIndexMonth extends Activity
 
 							contents.add(event);
 							frameLayout.addView(event);
-						}else if(ScheduleContent.isConformScheduleFromDate(tmpCal.getTime())) {
+						}else if(documents.size() > 0) {
 							TextView event = new TextView(this);
 
 							event.setBackgroundResource(R.drawable.event_existence);
@@ -397,6 +399,33 @@ public class EventIndexMonth extends Activity
 
 							contents.add(event);
 							frameLayout.addView(event);
+
+							/* set for labels */
+							//int labelCount = ((columnHeight - columnSize) / columnWidth) * 2;
+							LinearLayout labelContainer = new LinearLayout(this);
+							labelContainer.setOrientation(LinearLayout.HORIZONTAL);
+							labelContainer.setPadding(0, (int)(columnSize + outsideColumnSize), 0, 0);
+
+							for(int j=0, k=0; (k<2 && j<documents.size()); j++) {
+								ScheduleContent doc = (ScheduleContent) documents.get(j);
+								String labelName = doc.getResourceLabel();
+
+								if(labelName != null) {
+									int resourceId = getResources().getIdentifier(labelName, "drawable", "com.android.tmp07");
+									int labelSize = columnWidth / 2;
+									ImageView label = new ImageView(this);
+	
+									label.setImageResource(resourceId);
+									label.setAdjustViewBounds(true);
+									label.setMaxHeight(labelSize);
+									label.setMaxWidth(labelSize);
+	
+									labelContainer.addView(label, new ViewGroup.LayoutParams(WC, WC));
+									k++;
+								}
+							}
+
+							frameLayout.addView(labelContainer, new ViewGroup.LayoutParams(FP, FP));
 						}
 		
 						weekRow.addView(frameLayout);
