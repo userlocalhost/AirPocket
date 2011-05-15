@@ -7,6 +7,7 @@ import android.graphics.Paint.Align;
 import android.graphics.Paint.Style;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.BitmapDrawable;
 
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -154,12 +155,16 @@ public class EventView extends View {
 				int length = (getWidth() - paddingLeft);
 				int prefix = timelineWidth;
 				int depth = doc.getDepth();
-				int index = doc.getIndex();
+				int indexNum = doc.getIndex();
+				String labelName;
+				BitmapDrawable icon = null;
+				int imageSize = 32;
+				int imagePadding = 5;
 	
-				if(depth > 0){
+				if(depth > 0) {
 					int tmpLength = (3 * length) / (2 * (depth + 1));
 
-					prefix += ((length - tmpLength) / depth) * index;
+					prefix += ((length - tmpLength) / depth) * indexNum;
 					length = prefix + tmpLength;
 				}
 
@@ -182,8 +187,19 @@ public class EventView extends View {
 	
 				canvas.drawRoundRect(new RectF(prefix, docTop, length, docBottom), 10, 10, docStyle);
 
+				labelName = doc.getResourceLabel();
+				if(labelName != null) {
+					int resourceId = this.index.getResources().getIdentifier(labelName, "drawable", "com.android.tmp07");
+					int imageX = prefix + imagePadding;
+					int imageY = (int)docTop + 3;
+
+					icon = (BitmapDrawable) this.index.getResources().getDrawable(resourceId);
+					icon.setBounds(imageX, imageY, imageX + imageSize, imageY + imageSize);
+					icon.draw(canvas);
+				}
+
 				float textPadding = 10f;
-				float textX = prefix + textPadding;
+				float textX = prefix + textPadding + imageSize + imagePadding;
 				float textY = docTop + 20f;
 				float textSize = 14f;
 				textStyle.setColor(getResources().getColor(R.color.normal_text));

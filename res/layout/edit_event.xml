@@ -116,10 +116,36 @@
 			/>
 
 		<TextView
-			android:id="@+id/edit_label"
+			android:id="@+id/attendee"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_below="@id/context_input"
+			android:text="参加者："
+			android:paddingTop="15sp"
+			android:paddingBottom="15sp"
+			/>
+		<LinearLayout
+			android:id="@+id/attendee_list"
+			android:orientation="vertical"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:layout_toRightOf="@id/attendee"
+			android:layout_below="@id/context_input"
+			/>
+		<Button
+			android:id="@+id/attendee_add"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_toRightOf="@id/attendee"
+			android:layout_below="@id/attendee_list"
+			android:text="追加"
+			/>
+
+		<TextView
+			android:id="@+id/edit_label"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_below="@id/attendee_add"
 			android:text="ラベル："
 			android:paddingTop="15sp"
 			android:paddingBottom="15sp"
@@ -136,7 +162,7 @@
 			android:id="@+id/show_label"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:layout_below="@id/context_input"
+			android:layout_below="@id/attendee_add"
 			android:layout_alignParentRight="true"
 			android:maxWidth="80sp"
 			android:maxHeight="80sp"

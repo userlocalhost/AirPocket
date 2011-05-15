@@ -23,7 +23,7 @@
 		<ImageView
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:src="@drawable/icon"
+			android:src="@drawable/iconedit"
 			/>
 		<TextView
 			android:layout_width="fill_parent"
@@ -32,12 +32,13 @@
 			android:text="@string/make_event"
 			android:textSize="18sp"
 			android:textColor="@color/normal_text"
+			android:paddingLeft="3sp"
 			/>
 	</LinearLayout>
 	<ListView
 		android:id="@+id/ev_list_event_listview"
 		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
+		android:layout_height="fill_parent"
 		android:layout_below="@id/ev_list_make_event"
 		android:layout_marginTop="5sp"
 		android:background="@color/edit_background"

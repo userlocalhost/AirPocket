@@ -33,9 +33,6 @@ public class ServerInterface {
 	private static final String TAG = "ServerInterface";
 	public static final String InfoFilepath = "/sdcard/ArielMultiScheduler/logininfo.txt";
 
-	private static final String readURL = "http://192.168.0.3/documentSample.xml";
-	private static final String postURL = "http://192.168.0.3/cgi-bin/tmp10.cgi";
-
 	ServerInterface() {
 		File file = new File(InfoFilepath);
 		if(file.exists()) {

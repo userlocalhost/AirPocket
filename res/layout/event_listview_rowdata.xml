@@ -6,16 +6,18 @@
 	android:padding="5sp"
 	>
 	<ImageView
+		android:id="@+id/ev_list_row_image"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:src="@drawable/icon"
 		/>
 	<TextView
 		android:id="@+id/ev_list_row_label"
-		android:layout_width="wrap_content"
+		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
 		android:textColor="@color/normal_text"
 		android:gravity="fill_vertical"
 		android:textSize="16sp"
+		android:paddingLeft="3sp"
 		/>
 </LinearLayout>

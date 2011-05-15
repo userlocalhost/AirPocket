@@ -164,7 +164,7 @@ public class EventIndexMonth extends Activity
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.eventindex_month);
 
-		serverInterface.doSync(this);
+		//serverInterface.doSync(this);
 
 		setHoliday();
 	

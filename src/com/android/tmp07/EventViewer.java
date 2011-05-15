@@ -127,5 +127,14 @@ public class EventViewer extends Activity
 
 		findViewById(R.id.evv_operation_edit).setOnClickListener(selectEdit);
 		findViewById(R.id.evv_operation_delete).setOnClickListener(selectDelete);
+
+		/* set label-image if there is */
+		//String labelName = document.getResourceLabel();
+		//if(labelName != null) {
+			//TextView contextView = (TextView) findViewById(R.id.context);
+			//int resourceId = getResources().getIdentifier(labelName, "drawable", "com.android.tmp07");
+
+			//contextView.setBackgroundResource(resourceId);
+		//}
 	}
 }

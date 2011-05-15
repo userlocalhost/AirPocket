@@ -9,6 +9,7 @@ import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.LinearLayout;
+import android.widget.ImageView;
 
 import android.content.Intent;
 import android.util.Log;
@@ -172,15 +173,21 @@ public class EventIndexDay extends Activity
 
 		for(int i=0; i<events.size(); i++) {
 			ScheduleContent doc = (ScheduleContent) events.get(i);
+			LinearLayout container = new LinearLayout(this);
 			TextView item = new TextView(this);
+
+			container.setOrientation(LinearLayout.HORIZONTAL);
+
 			item.setTextColor(getResources().getColor(R.color.normal_text));
 			item.setBackgroundResource(R.drawable.event_wholeday);
 			item.setGravity(Gravity.CENTER);
 			item.setText(doc.getSubject());
 	
 			docsBuffer.add(item);
+			
 			//alldayBoard.addView(item, new ViewGroup.LayoutParams(FP, WC));
-			alldayBoard.addView(item);
+			container.addView(item, new ViewGroup.LayoutParams(FP, FP));
+			alldayBoard.addView(container);
 		}
 	}
 

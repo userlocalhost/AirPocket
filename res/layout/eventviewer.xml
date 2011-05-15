@@ -30,10 +30,12 @@
 			<Button
 				android:id="@+id/evv_operation_edit"
 				android:text="@string/edit_event"
+				android:drawableLeft="@drawable/iconedit"
 				/>
 			<Button
 				android:id="@+id/evv_operation_delete"
 				android:text="@string/delete_event"
+				android:drawableLeft="@drawable/icondelete"
 				/>
 		</TableRow>
 	</TableLayout>
@@ -87,7 +89,7 @@
 	<TextView
 		android:id="@+id/context"
 		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
+		android:layout_height="fill_parent"
 		android:layout_below="@id/context_title"
 		android:textSize="17sp"
 		android:textColor="@color/normal_text"

@@ -12,10 +12,12 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import android.view.View;
+import android.view.Gravity;
+import android.view.ViewGroup;
 import android.view.View.OnClickListener;
-
 
 import android.app.TimePickerDialog;
 import android.app.DatePickerDialog;
@@ -48,13 +50,19 @@ public class EditEvent extends Activity
 		"com.android.tmp07.editevent.endtime";
 	public static final String KEY_LABEL_RESOURCEID =
 		"com.android.tmp07.editevent.label_resourceid";
+	public static final String KEY_ATTENDEE =
+		"com.android.tmp07.editevent.attendee";
 
 	public static final int StatusEdit = 1<<0;
 	public static final int StatusAllday = 1<<1;
 	public static final int StatusEditLabel = 1<<2;
+	public static final int StatusEditAttendee = 1<<3;
 
 	private static final String TAG = "EditEvent";
 	private static final String TIME_CONFIG_ALERT = "終了時刻が開始時刻の前に設定されています。";
+	
+	private static final int FP = ViewGroup.LayoutParams.FILL_PARENT;
+	private static final int WC = ViewGroup.LayoutParams.WRAP_CONTENT;
 
 	private Calendar currentDate;
 	private Calendar startTime;
@@ -119,7 +127,15 @@ public class EditEvent extends Activity
 		}
 	};
 
-	OnClickListener labelSelect = new View.OnClickListener(){
+	OnClickListener selectAttendee = new View.OnClickListener(){
+		public void onClick(View v){
+			Intent intent = new Intent(EditEvent.this, SelectAttendee.class);
+
+			startActivityForResult(intent, StatusEditAttendee);
+		}
+	};
+
+	OnClickListener selectLabel = new View.OnClickListener(){
 		public void onClick(View v){
 			Intent intent = new Intent(EditEvent.this, EditLabel.class);
 
@@ -184,6 +200,22 @@ public class EditEvent extends Activity
 			labelImage.setImageResource(resourceId);
 			labelImage.setAdjustViewBounds(true);
 			labelImage.invalidate();
+		} else if((requestCode == StatusEditAttendee) && (resultCode == RESULT_OK)) {
+			LinearLayout attendeeList = (LinearLayout) findViewById(R.id.attendee_list);
+			TextView emailAddr = new TextView(this);
+			TextView deleteBtn = new TextView(this);
+
+			/* initialize display of each attendee */
+			emailAddr.setText(data.getStringExtra(KEY_ATTENDEE));
+			emailAddr.setGravity(Gravity.LEFT);
+
+			/* initialize delete button of each attendee */
+			deleteBtn.setBackgroundResource(R.drawable.delete_mid);
+			deleteBtn.setGravity(Gravity.RIGHT);
+
+			/* set sequence is important ! */
+			attendeeList.addView(deleteBtn, new ViewGroup.LayoutParams(WC, WC));
+			attendeeList.addView(emailAddr, new ViewGroup.LayoutParams(FP, WC));
 		}
 	}
 
@@ -248,8 +280,9 @@ public class EditEvent extends Activity
 		updateDateDisplay(startTime, R.id.start_date);
 		updateDateDisplay(endTime, R.id.end_date);
 
-		/* initialization of edit-label */
-		findViewById(R.id.edit_label_button).setOnClickListener(labelSelect);
+		/* initialize of each buttom click-event */
+		findViewById(R.id.edit_label_button).setOnClickListener(selectLabel);
+		findViewById(R.id.attendee_add).setOnClickListener(selectAttendee);
 	}
 
 	private void initButtonEvent() {
