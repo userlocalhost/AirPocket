@@ -21,6 +21,7 @@ public class SelectAttendee extends Activity
 	
 	private static final int FP = ViewGroup.LayoutParams.FILL_PARENT;
 	private static final int WC = ViewGroup.LayoutParams.WRAP_CONTENT;
+	private static final float textSize = 18f;
 
 	OnClickListener selectItem = new View.OnClickListener() {
 		public void onClick(View v) {
@@ -53,6 +54,8 @@ public class SelectAttendee extends Activity
 
 				row.setText(email);
 				row.setOnClickListener(selectItem);
+				row.setTextSize(textSize);
+				row.setBackgroundResource(R.drawable.attendee_list_row);
 
 				listBoard.addView(row, new ViewGroup.LayoutParams(FP, WC));
 			} while(cursor.moveToNext());

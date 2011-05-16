@@ -13,11 +13,14 @@ import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.ArrayAdapter;
 
 import android.view.View;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.LayoutInflater;
 
 import android.app.TimePickerDialog;
 import android.app.DatePickerDialog;
@@ -71,6 +74,10 @@ public class EditEvent extends Activity
 	private int requestStatus;
 	private ScheduleContent document;
 	private String resourceLabel = null;
+	private LinkedList<String> attendeesList = new LinkedList<String> ();
+
+	/* The following member is used at attendeelist-View */
+	private int idCounter = 1;
 
 	OnCheckedChangeListener checkAllDay = new CompoundButton.OnCheckedChangeListener() {
 		public void onCheckedChanged(CompoundButton button, boolean isChecked) {
@@ -201,21 +208,7 @@ public class EditEvent extends Activity
 			labelImage.setAdjustViewBounds(true);
 			labelImage.invalidate();
 		} else if((requestCode == StatusEditAttendee) && (resultCode == RESULT_OK)) {
-			LinearLayout attendeeList = (LinearLayout) findViewById(R.id.attendee_list);
-			TextView emailAddr = new TextView(this);
-			TextView deleteBtn = new TextView(this);
-
-			/* initialize display of each attendee */
-			emailAddr.setText(data.getStringExtra(KEY_ATTENDEE));
-			emailAddr.setGravity(Gravity.LEFT);
-
-			/* initialize delete button of each attendee */
-			deleteBtn.setBackgroundResource(R.drawable.delete_mid);
-			deleteBtn.setGravity(Gravity.RIGHT);
-
-			/* set sequence is important ! */
-			attendeeList.addView(deleteBtn, new ViewGroup.LayoutParams(WC, WC));
-			attendeeList.addView(emailAddr, new ViewGroup.LayoutParams(FP, WC));
+			addAttendeeView(data.getStringExtra(KEY_ATTENDEE));
 		}
 	}
 
@@ -268,6 +261,12 @@ public class EditEvent extends Activity
 			}
 			
 			int resourceId = getResources().getIdentifier(resourceLabel, "drawable", "com.android.tmp07");
+
+			/* set display of attendees */
+			LinkedList<String> attendees = document.getAttendee();
+			for(int i=0; i<attendees.size(); i++) {
+				addAttendeeView(attendees.get(i));
+			}
 		}
 
 		if((requestStatus & StatusAllday) > 0) {
@@ -361,6 +360,8 @@ public class EditEvent extends Activity
 			newDoc.setResourceLabel(resourceLabel);
 		}
 
+		newDoc.setAttendee(attendeesList);
+
 		newDoc.regist();
 	}
 
@@ -370,7 +371,7 @@ public class EditEvent extends Activity
 		document.setSubject(((TextView) findViewById(R.id.subject_input)).getText().toString());
 		document.setContext(((TextView) findViewById(R.id.context_input)).getText().toString());
 	}
-	
+
 	private static boolean checkSameDate(Date a, Date b) {
 		int aDate = (a.getYear() * 365) + (a.getMonth() * 31) + a.getDate();
 		int bDate = (b.getYear() * 365) + (b.getMonth() * 31) + b.getDate();
@@ -378,5 +379,44 @@ public class EditEvent extends Activity
 		Log.d(TAG, String.format("[checkSameDate] aDate:%d, bDate:%d", aDate, bDate));
 
 		return (aDate == bDate);
+	}
+
+	private void addAttendeeView(String attendeeStr) {
+		try {
+			LinearLayout attendeeListView = (LinearLayout) findViewById(R.id.attendee_list);
+			RelativeLayout container = new RelativeLayout(this);
+
+			TextView emailAddr = new TextView(this);
+			TextView deleteBtn = new TextView(this);
+
+			emailAddr.setId(idCounter++);
+			deleteBtn.setId(idCounter++);
+
+			/* initialize display of each attendee */
+			emailAddr.setText(attendeeStr);
+			emailAddr.setGravity(Gravity.LEFT);
+
+			/* initialize delete button of each attendee */
+			deleteBtn.setBackgroundResource(R.drawable.delete_mid);
+			deleteBtn.setGravity(Gravity.RIGHT);
+
+			/* set RelativeLayout.LayoutParams */
+			RelativeLayout.LayoutParams paramsBtn = new RelativeLayout.LayoutParams(WC, WC);
+			RelativeLayout.LayoutParams paramsEmail = new RelativeLayout.LayoutParams(FP, WC);
+
+			paramsBtn.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+			paramsEmail.addRule(RelativeLayout.LEFT_OF, deleteBtn.getId());
+			paramsEmail.addRule(RelativeLayout.ALIGN_BASELINE, deleteBtn.getId());
+
+			/* set sequence is important ! */
+			container.addView(deleteBtn, paramsBtn);
+			container.addView(emailAddr, paramsEmail);
+
+			attendeeListView.addView(container, new ViewGroup.LayoutParams(FP, WC));
+
+			attendeesList.add(attendeeStr);
+		} catch(Exception e) {
+			Log.e(TAG, "[onActivityResult] (StatusEditAttendee) " + e.getMessage());
+		}
 	}
 }

@@ -27,6 +27,8 @@ public class ScheduleContent
 
 	private int index;
 	private int depth;
+
+	private LinkedList<String> attendee;
 	
 	ScheduleContent() {
 		this.status = 0;
@@ -243,6 +245,10 @@ public class ScheduleContent
 		this.id = id;
 	}
 
+	public void setAttendee(LinkedList<String> list) {
+		this.attendee = list;
+	}
+
 	public void setStatus(int status) {
 		this.status |= status;
 	}
@@ -281,6 +287,10 @@ public class ScheduleContent
 
 	public String getId() {
 		return this.id;
+	}
+
+	public LinkedList<String> getAttendee() {
+		return this.attendee;
 	}
 
 	public boolean isStatus(int status) {
