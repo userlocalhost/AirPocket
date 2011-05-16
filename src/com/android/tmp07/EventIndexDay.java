@@ -106,7 +106,7 @@ public class EventIndexDay extends Activity
 		if(requestCode == EditEvent.StatusEdit && resultCode == RESULT_OK){
 			// nope
 		}
-
+		
 		redrawAlldayEvents();
 	}
 
@@ -194,9 +194,10 @@ public class EventIndexDay extends Activity
 	private void clearDocsBuffer() {
 		LinearLayout alldayBoard = (LinearLayout) findViewById(R.id.ev_day_index_wholeday_list);
 
-		for(int i=0; i<docsBuffer.size(); i++) {
-			alldayBoard.removeView((TextView)docsBuffer.get(i));
+		for(int i=0; i<alldayBoard.getChildCount(); i++) {
+			alldayBoard.removeViewAt(i);
 		}
+
 
 		docsBuffer.clear();
 	}
