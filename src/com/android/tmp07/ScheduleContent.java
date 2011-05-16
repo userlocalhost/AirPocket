@@ -34,6 +34,7 @@ public class ScheduleContent
 		this.status = 0;
 		this.id = UUID.randomUUID().toString();
 		this.resourceLabel = null;
+		this.attendee = null;
 	}
 
 	ScheduleContent(String subject, String summary, Date start, Date end) {
@@ -44,6 +45,7 @@ public class ScheduleContent
 		this.status = 0;
 		this.id = UUID.randomUUID().toString();
 		this.resourceLabel = null;
+		this.attendee = null;
 	}
 
 	/* This is a assistant method */

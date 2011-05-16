@@ -74,7 +74,7 @@ public class EditEvent extends Activity
 	private int requestStatus;
 	private ScheduleContent document;
 	private String resourceLabel = null;
-	private LinkedList<String> attendeesList = new LinkedList<String> ();
+	private LinkedList<String> attendeesList;
 
 	/* The following member is used at attendeelist-View */
 	private int idCounter = 1;
@@ -150,6 +150,30 @@ public class EditEvent extends Activity
 		}
 	};
 	
+	OnClickListener deleteAttendee = new View.OnClickListener(){
+		public void onClick(View v) {
+			String deleteAttendeeStr = (String) v.getTag();
+			LinearLayout attendeeViewContainer = (LinearLayout) findViewById(R.id.attendee_list);
+
+			for(int i=0; i<attendeeViewContainer.getChildCount(); i++) {
+				View child = attendeeViewContainer.getChildAt(i);
+				String childStr = (String) child.getTag();
+
+				if(childStr.equals(deleteAttendeeStr)) {
+					attendeeViewContainer.removeViewAt(i);
+					break;
+				}
+			}
+
+			for(int i=0; i<attendeesList.size(); i++) {
+				if(attendeesList.get(i).equals(deleteAttendeeStr)) {
+					attendeesList.remove(i);
+					break;
+				}
+			}
+		}
+	};
+	
 	DatePickerDialog.OnDateSetListener startDateEvent = new DatePickerDialog.OnDateSetListener(){
 		public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth){
 			startTime.set(Calendar.YEAR, year);
@@ -208,7 +232,20 @@ public class EditEvent extends Activity
 			labelImage.setAdjustViewBounds(true);
 			labelImage.invalidate();
 		} else if((requestCode == StatusEditAttendee) && (resultCode == RESULT_OK)) {
-			addAttendeeView(data.getStringExtra(KEY_ATTENDEE));
+			String attendeeStr = data.getStringExtra(KEY_ATTENDEE);
+			boolean attendFlag = true;
+
+			for(int i=0; i<attendeesList.size(); i++) {
+				if(attendeesList.get(i).equals(attendeeStr)) {
+					attendFlag = false;
+					break;
+				}
+			}
+
+			if(attendFlag) {
+				addAttendeeView(attendeeStr);
+				attendeesList.add(attendeeStr);
+			}
 		}
 	}
 
@@ -259,14 +296,16 @@ public class EditEvent extends Activity
 				labelImage.setAdjustViewBounds(true);
 				labelImage.invalidate();
 			}
-			
-			int resourceId = getResources().getIdentifier(resourceLabel, "drawable", "com.android.tmp07");
 
 			/* set display of attendees */
-			LinkedList<String> attendees = document.getAttendee();
-			for(int i=0; i<attendees.size(); i++) {
-				addAttendeeView(attendees.get(i));
+			attendeesList = document.getAttendee();
+			if(attendeesList != null) {
+				for(int i=0; i<attendeesList.size(); i++) {
+					addAttendeeView(attendeesList.get(i));
+				}
 			}
+		} else {
+			attendeesList = new LinkedList<String> ();
 		}
 
 		if((requestStatus & StatusAllday) > 0) {
@@ -399,6 +438,8 @@ public class EditEvent extends Activity
 			/* initialize delete button of each attendee */
 			deleteBtn.setBackgroundResource(R.drawable.delete_mid);
 			deleteBtn.setGravity(Gravity.RIGHT);
+			deleteBtn.setOnClickListener(deleteAttendee);
+			deleteBtn.setTag(attendeeStr);
 
 			/* set RelativeLayout.LayoutParams */
 			RelativeLayout.LayoutParams paramsBtn = new RelativeLayout.LayoutParams(WC, WC);
@@ -411,10 +452,9 @@ public class EditEvent extends Activity
 			/* set sequence is important ! */
 			container.addView(deleteBtn, paramsBtn);
 			container.addView(emailAddr, paramsEmail);
+			container.setTag(attendeeStr);
 
 			attendeeListView.addView(container, new ViewGroup.LayoutParams(FP, WC));
-
-			attendeesList.add(attendeeStr);
 		} catch(Exception e) {
 			Log.e(TAG, "[onActivityResult] (StatusEditAttendee) " + e.getMessage());
 		}
