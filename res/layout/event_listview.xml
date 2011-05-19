@@ -19,6 +19,7 @@
 		android:layout_below="@id/ev_list_current_date"
 		android:layout_marginTop="5sp"
 		android:background="@drawable/make_event"
+		android:padding="5sp"
 		>
 		<ImageView
 			android:layout_width="wrap_content"

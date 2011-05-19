@@ -25,6 +25,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
+import android.widget.Toast;
 
 import android.graphics.Color;
 
@@ -32,10 +33,22 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+/* for voice recognition */
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.speech.RecognizerIntent;
+
+/* there are used for sensor-action */
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.Calendar;
 import java.util.ArrayList;
+import java.util.List;
 import java.lang.Integer;
 import java.lang.Exception;
 
@@ -48,6 +61,12 @@ public class EventIndexMonth extends Activity
 
 	private static final int FP = ViewGroup.LayoutParams.FILL_PARENT;
 	private static final int WC = ViewGroup.LayoutParams.WRAP_CONTENT;
+
+	/* request status */
+	private static int REQUEST_SEARCH = (1 << 0);
+	private static int REQUEST_SEARCH_ALL = (1 << 1);
+	private static int REQUEST_SEARCH_MONTH = (1 << 2);
+	private static int REQUEST_KEY_SELECT = (1 << 3);
 
 	/* current activity status */
 	private static int statusSuspend = 0;
@@ -69,8 +88,26 @@ public class EventIndexMonth extends Activity
 
 	/* following member is used at board-switch */
 	private ObjectContainer currentContainer;
-	
+
+	/* This member is used at onResume event for invalidate screen */
 	private int activityStatus;
+
+	/* This member is for search processing */
+	private int searchType = 0;
+
+	SensorEventListener motionListener = new SensorEventListener() {
+		public void onAccuracyChanged(Sensor sensor, int accuracy) {
+			//nope
+		}
+
+		public void onSensorChanged(SensorEvent event) {
+			Sensor sensor = event.sensor;
+			if(sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+				Log.d(TAG, String.format("[onSensorChanged] x:%f, y:%f, z:%f",
+							event.values[0], event.values[1], event.values[2]));
+			}
+		}
+	};
 
 	OnTouchListener moveMonthMotion = new OnTouchListener() {
 		public boolean onTouch(View v, MotionEvent e) {
@@ -182,6 +219,19 @@ public class EventIndexMonth extends Activity
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.menu, menu);
 
+		MenuItem itemSearchAll = menu.findItem(R.id.menuSearchAll);
+		MenuItem itemSearchMonth = menu.findItem(R.id.menuSearchMonth);
+
+		PackageManager pm = getPackageManager();
+		List<ResolveInfo> activities = pm.queryIntentActivities(new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH), 0);
+		
+		if(! (activities.size() > 0)) {
+			itemSearchAll.setEnabled(false);
+			itemSearchMonth.setEnabled(false);
+		}
+
+		initSensorDevices();
+
 		return true;
 	}
 	
@@ -191,8 +241,6 @@ public class EventIndexMonth extends Activity
 
 		switch(item.getItemId()) {
 			case R.id.menuLogout:
-				Log.d(TAG, "[onOptionsItemSelected] menuLogout is selected");
-
 				File file = new File(ServerInterface.InfoFilepath);
 				if(file.exists()) {
 					Log.d(TAG, "[clickEvent] do delete file");
@@ -204,9 +252,68 @@ public class EventIndexMonth extends Activity
 
 				ret = true;
 				break;
+			case R.id.menuSearchAll:
+				searchType = REQUEST_SEARCH_ALL;
+				//searchSchedule(ScheduleContent.getAllDocuments());
+				searchSchedule();
+				break;
+			case R.id.menuSearchMonth:
+				searchType = REQUEST_SEARCH_MONTH;
+				//searchSchedule(ScheduleContent.grepScheduleFromMonth(currentDate.getTime()));
+				searchSchedule();
+				break;
 		}
 
 		return ret;
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if(resultCode == RESULT_OK) {
+			if(requestCode == REQUEST_SEARCH) {
+				ArrayList<String> candidates = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+				Intent intent = new Intent(this, ItemSelect.class);
+
+				intent.putExtra(ItemSelect.KEY_ITEMS, candidates);
+				intent.putExtra(ItemSelect.KEY_TITLE, R.string.title_search_candidate);
+
+				startActivityForResult(intent, REQUEST_KEY_SELECT);
+			} else if(requestCode == REQUEST_KEY_SELECT) {
+				String selectedKey = data.getStringExtra(ItemSelect.KEY_SELECTED_ITEM);
+				List<ScheduleContent> targetDocuments = null;
+
+				if(searchType == REQUEST_SEARCH_ALL) {
+					targetDocuments = ScheduleContent.getAllDocuments();
+				} else if(searchType == REQUEST_SEARCH_MONTH) {
+					targetDocuments = ScheduleContent.grepScheduleFromMonth(currentDate.getTime());
+				}
+
+				if(targetDocuments != null && targetDocuments.size() > 0) {
+					ArrayList<String> idArray = new ArrayList<String> ();
+
+					for(int i=0; i<targetDocuments.size(); i++) {
+						ScheduleContent document = targetDocuments.get(i);
+
+						if(document.getSubject().indexOf(selectedKey) != -1) {
+							idArray.add(document.getId());
+						}
+					}
+
+					if(idArray.size() > 0) {
+						Intent intent = new Intent(this, EventListView.class);
+
+						intent.putExtra(EventListView.KEY_DATE, currentDate);
+						intent.putStringArrayListExtra(EventListView.KEY_DOCUMENTS, idArray);
+	
+						startActivity(intent);
+					} else {
+						Toast.makeText(this, "該当する予定が見つかりません。", Toast.LENGTH_LONG).show();
+					}
+				} else {
+					Toast.makeText(this, "該当する予定が見つかりません。", Toast.LENGTH_LONG).show();
+				}
+			}
+		}
 	}
 
 	private void setHoliday() {
@@ -565,6 +672,25 @@ public class EventIndexMonth extends Activity
 		
 		mainFrame.removeView(replaceContainer.canvas);
 		replaceContainer = null;
+	}
+
+	private void searchSchedule() {
+		Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+
+		startActivityForResult(intent, REQUEST_SEARCH);
+	}
+
+	private void initSensorDevices() {
+		/* these processing describes for ation-sensor */
+		
+		SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+		List<Sensor> sensors = sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER);
+
+		if(sensors.size() > 0) {
+			Sensor sensor = sensors.get(0);
+
+			sensorManager.registerListener(motionListener, sensor, SensorManager.SENSOR_DELAY_FASTEST);
+		}
 	}
 
 	class ObjectContainer implements Cloneable {

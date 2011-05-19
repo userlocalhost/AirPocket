@@ -11,8 +11,15 @@
 
 	<string name="edit_event">編集</string>
 	<string name="delete_event">削除</string>
-	<string name="logout">ログアウト</string>
 
 	<string name="keyWeekCount">key of weekCount</string>
 	<string name="keyBackgroundColor">key of backgroundColor</string>
+
+	<!-- Menu Items -->
+	<string name="menu_logout">ログアウト</string>
+	<string name="menu_search_all">検索（全体）</string>
+	<string name="menu_search_month">検索（表示月）</string>
+
+	<!-- for search title -->
+	<string name="title_search_candidate">[検索キーワード候補]</string>
 </resources>

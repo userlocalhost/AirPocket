@@ -25,6 +25,9 @@ import android.view.LayoutInflater;
 import android.app.TimePickerDialog;
 import android.app.DatePickerDialog;
 
+import android.net.Uri;
+import android.database.Cursor;
+import android.provider.Contacts;
 import android.content.Intent;
 import android.util.Log;
 
@@ -53,8 +56,6 @@ public class EditEvent extends Activity
 		"com.android.tmp07.editevent.endtime";
 	public static final String KEY_LABEL_RESOURCEID =
 		"com.android.tmp07.editevent.label_resourceid";
-	public static final String KEY_ATTENDEE =
-		"com.android.tmp07.editevent.attendee";
 
 	public static final int StatusEdit = 1<<0;
 	public static final int StatusAllday = 1<<1;
@@ -136,9 +137,22 @@ public class EditEvent extends Activity
 
 	OnClickListener selectAttendee = new View.OnClickListener(){
 		public void onClick(View v){
-			Intent intent = new Intent(EditEvent.this, SelectAttendee.class);
+			Cursor cursor = managedQuery(Contacts.ContactMethods.CONTENT_EMAIL_URI, null, null, null, null);
+			int columnIndex = cursor.getColumnIndex(Contacts.ContactMethods.DATA);
 
-			startActivityForResult(intent, StatusEditAttendee);
+			if(columnIndex != -1 ) {
+				Intent intent = new Intent(EditEvent.this, ItemSelect.class);
+				ArrayList<String> items = new ArrayList<String> ();
+
+				cursor.moveToFirst();
+				do {
+					items.add(cursor.getString(columnIndex));
+				} while(cursor.moveToNext());
+
+				intent.putExtra(ItemSelect.KEY_ITEMS, items);
+
+				startActivityForResult(intent, StatusEditAttendee);
+			}
 		}
 	};
 
@@ -232,7 +246,7 @@ public class EditEvent extends Activity
 			labelImage.setAdjustViewBounds(true);
 			labelImage.invalidate();
 		} else if((requestCode == StatusEditAttendee) && (resultCode == RESULT_OK)) {
-			String attendeeStr = data.getStringExtra(KEY_ATTENDEE);
+			String attendeeStr = data.getStringExtra(ItemSelect.KEY_SELECTED_ITEM);
 			boolean attendFlag = true;
 
 			for(int i=0; i<attendeesList.size(); i++) {

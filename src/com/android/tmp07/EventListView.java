@@ -18,7 +18,6 @@ import android.util.Log;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Calendar;
 
 import java.lang.Exception;
@@ -27,6 +26,7 @@ public class EventListView extends Activity
 {
 	public static final String KEY_DATE = "com.android.tmp07.makelistview.date";
 	public static final String KEY_STATUS= "com.android.tmp07.makelistview.status";
+	public static final String KEY_DOCUMENTS= "com.android.tmp07.makelistview.documents";
 
 	public static final int statusAllEvents = (1<<0);
 
@@ -76,10 +76,20 @@ public class EventListView extends Activity
 		
 		int listStatus = getIntent().getIntExtra(KEY_STATUS, 0);
 		currentDate = (Calendar) getIntent().getSerializableExtra(KEY_DATE);
+		ArrayList<String> idArray = (ArrayList) getIntent().getStringArrayListExtra(KEY_DOCUMENTS);
 
-		List<ScheduleContent> datalist = new ArrayList<ScheduleContent>();
+		ArrayList<ScheduleContent> datalist = new ArrayList<ScheduleContent>();
 
-		if((listStatus & statusAllEvents) > 0) {
+		if(idArray != null) {
+			docs = new ArrayList();
+			for(int i=0; i<idArray.size(); i++) {
+				ScheduleContent document = ScheduleContent.getFromId(idArray.get(i));
+
+				if(document != null) {
+					docs.add(document);
+				}
+			}
+		}	else if((listStatus & statusAllEvents) > 0) {
 			docs = ScheduleContent.grepScheduleFromDate(currentDate.getTime());
 		} else {
 			docs = ScheduleContent.grepScheduleFromTime(currentDate.getTime());
@@ -108,22 +118,5 @@ public class EventListView extends Activity
 		} catch(Exception e) {
 			Log.e(TAG, "[onCrate] ERROR:"+e.getMessage());
 		}
-
-		/*
-		TextView current_date = (TextView) findViewById(R.id.current_date);
-		currentDate = (Calendar) getIntent().getSerializableExtra(KEY_DATE);
-
-		currentDateString = String.format("%d/%02d/%02d", 
-					currentDate.get(Calendar.YEAR),
-					currentDate.get(Calendar.MONTH) + 1,
-					currentDate.get(Calendar.DAY_OF_MONTH));
-
-		current_date.setTextColor(getResources().getColor(R.color.date_text));
-		current_date.setText(currentDateString);
-
-		findViewById(R.id.current_date).setOnClickListener(selectTitle);
-		findViewById(R.id.move_prev).setOnClickListener(moveDay);;
-		findViewById(R.id.move_next).setOnClickListener(moveDay);;
-		*/
 	}
 }

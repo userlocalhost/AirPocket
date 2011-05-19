@@ -5,6 +5,7 @@ import android.util.Log;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class ScheduleContent
@@ -59,6 +60,32 @@ public class ScheduleContent
 			(this.endTime.getMonth() == cmpDay.getMonth()) &&
 			(this.endTime.getDate() == cmpDay.getDate()))) {
 
+			ret = true;
+		}
+
+		return ret;
+	}
+
+	public boolean isSameYear(Date cmpDay) {
+		boolean ret = false;
+		int startDays = (this.startTime.getYear() * 400);
+		int endDays = (this.endTime.getYear() * 400);
+		int cmpDays = (cmpDay.getYear() * 400);
+
+		if((startDays == cmpDays) || (endDays == cmpDays) || ((startDays <= cmpDays) && (cmpDays <= endDays))) {
+			ret = true;
+		}
+
+		return ret;
+	}
+
+	public boolean isSameMonth(Date cmpDay) {
+		boolean ret = false;
+		int startDays = (this.startTime.getYear() * 400) + (this.startTime.getMonth() * 31);
+		int endDays = (this.endTime.getYear() * 400) + (this.endTime.getMonth() * 31);
+		int cmpDays = (cmpDay.getYear() * 400) + (cmpDay.getMonth() * 31);
+
+		if((startDays == cmpDays) || (endDays == cmpDays) || ((startDays <= cmpDays) && (cmpDays <= endDays))) {
 			ret = true;
 		}
 
@@ -176,6 +203,24 @@ public class ScheduleContent
 
 		return ret;
 
+	}
+
+	public static ArrayList grepScheduleFromMonth(Date date) {
+		ArrayList ret = new ArrayList();
+		
+		for(int i=0; i<documents.size(); i++) {
+			ScheduleContent doc = documents.get(i);
+
+			if(doc.isSameMonth(date)) {
+				ret.add(doc);
+			}
+		}
+
+		return ret;
+	}
+	
+	public static List getAllDocuments() {
+		return documents;
 	}
 
 	public static boolean isConformScheduleFromDate(Date date) {
