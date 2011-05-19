@@ -57,7 +57,7 @@ import java.io.File;
 public class EventIndexMonth extends Activity
 {
 	private static final String[] weekLabelJp = {"日", "月", "火", "水", "木", "金", "土"};
-	private static final String TAG = "Tmp12";
+	private static final String TAG = "EventIndexMonth";
 
 	private static final int FP = ViewGroup.LayoutParams.FILL_PARENT;
 	private static final int WC = ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -68,11 +68,15 @@ public class EventIndexMonth extends Activity
 	private static int REQUEST_SEARCH_MONTH = (1 << 2);
 	private static int REQUEST_KEY_SELECT = (1 << 3);
 
+	/* threashold of acceleration amount */
+	private static float HORIZONTAL_ACCELERATION = 5f;
+
 	/* current activity status */
 	private static int statusSuspend = 0;
 	private static int statusActive = 1;
 	private static final float moveThreashold = 30f;
 
+	/* These members are used for move-month animation control */
 	private float motionX;
 	private int motionStatus = 0;
 
@@ -95,16 +99,54 @@ public class EventIndexMonth extends Activity
 	/* This member is for search processing */
 	private int searchType = 0;
 
+	AnimationListener animationListener = new Animation.AnimationListener() {
+		public void onAnimationCancel(Animation animation) {
+			// nope
+		}
+
+		public void onAnimationEnd(Animation animation) {
+			Log.d(TAG, "[animationListener::onAnimationEnd] reset motoinStatus");
+
+			motionStatus = 0;
+		}
+
+		public void onAnimationRepeat(Animation animation) {
+			// nope
+		}
+
+		public void onAnimationStart(Animation animation) {
+			// nope
+		}
+	};
+
 	SensorEventListener motionListener = new SensorEventListener() {
 		public void onAccuracyChanged(Sensor sensor, int accuracy) {
-			//nope
+			// nope
 		}
 
 		public void onSensorChanged(SensorEvent event) {
 			Sensor sensor = event.sensor;
 			if(sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-				Log.d(TAG, String.format("[onSensorChanged] x:%f, y:%f, z:%f",
+
+				/* this means amount of horizontal axis acceleration */
+				float amountHorizontalMotion = event.values[0];
+
+				if(motionStatus == 0 && amountHorizontalMotion > HORIZONTAL_ACCELERATION) {
+					motionStatus = 1;
+				} else if(motionStatus == 0 && amountHorizontalMotion < HORIZONTAL_ACCELERATION * (-1)) {
+					motionStatus = -1;
+				}
+
+				if(motionStatus == 1 || motionStatus == -1) {
+
+					/* this line means prevention for duplicate calling */
+					Log.d(TAG, String.format("[onSensorChanged] x:%f, y:%f, z:%f",
 							event.values[0], event.values[1], event.values[2]));
+
+					doMoveMonth(motionStatus);
+					
+					motionStatus = 2;
+				}
 			}
 		}
 	};
@@ -210,6 +252,8 @@ public class EventIndexMonth extends Activity
 		constructScreen(currentContainer);
 
 		activityStatus = statusActive;
+
+		initSensorDevices();
 	}
 
 	@Override
@@ -229,8 +273,6 @@ public class EventIndexMonth extends Activity
 			itemSearchAll.setEnabled(false);
 			itemSearchMonth.setEnabled(false);
 		}
-
-		initSensorDevices();
 
 		return true;
 	}
@@ -660,6 +702,8 @@ public class EventIndexMonth extends Activity
 			replaceSlide = AnimationUtils.loadAnimation(this, R.anim.slide_left2center);
 			Log.d(TAG, "[onClick] clicked next button");
 		}
+
+		replaceSlide.setAnimationListener(animationListener);
 
 		currentDate.set(Calendar.MONTH, currentMonth);
 		currentDate.set(Calendar.YEAR, currentYear);

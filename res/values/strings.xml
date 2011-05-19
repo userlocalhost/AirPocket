@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="app_name">ArielEvent</string>
+	<string name="app_name">AirPocket</string>
 	<string name="move_prev">＜</string>
 	<string name="move_next">＞</string>
 	<string name="editevent_title">EditEvent</string>
