@@ -1,0 +1,16 @@
+<entry
+    xmlns="http://www.w3.org/2005/Atom"
+    xmlns:gd="http://schemas.google.com/g/2005">
+  <category
+    scheme="http://schemas.google.com/g/2005#kind"
+    term="http://schemas.google.com/g/2005#event">
+  </category>
+	<title type="text">${title}</title>
+	<content type="text">${content}</content>
+  <gd:where valueString="">
+  </gd:where>
+  <gd:when
+		startTime="${start_time}"
+		endTime="${end_time}">
+  </gd:when>
+</entry>

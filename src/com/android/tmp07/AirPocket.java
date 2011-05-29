@@ -25,9 +25,9 @@ public class AirPocket extends Activity
 	OnClickListener clickEvent = new View.OnClickListener() {
 		public void onClick(View v) {
 
-			Log.d(TAG, "[clickEvent]");
+			Log.d(TAG, "[clickEvent] + " + getPackageName());
 
-			File file = new File(ServerInterface.InfoFilepath);
+			File file = new File(AppConfig.APP_CONFIG_PATH);
 			if(! file.exists()) {
 				Log.d(TAG, "hogehoge.txt is NOT existed");
 	
@@ -51,8 +51,6 @@ public class AirPocket extends Activity
 				}
 			}
 
-			new ServerInterface();
-
 			openEventIndex();
 		}
 	};
@@ -64,7 +62,7 @@ public class AirPocket extends Activity
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.login_page);
 
-		File file = new File(ServerInterface.InfoFilepath);
+		File file = new File(AppConfig.APP_CONFIG_PATH);
 		if(file.exists()) {
 			openEventIndex();
 		} else {

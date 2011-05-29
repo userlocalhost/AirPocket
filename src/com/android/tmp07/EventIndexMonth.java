@@ -44,6 +44,10 @@ import android.hardware.SensorManager;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 
+/* it's used for ThreadSyncGoogleCaneldar */
+import android.os.Handler;
+import android.os.Message;
+
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.Calendar;
@@ -51,8 +55,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.lang.Integer;
 import java.lang.Exception;
+import java.lang.Thread;
 
 import java.io.File;
+import java.io.Serializable;
 
 public class EventIndexMonth extends Activity
 {
@@ -62,14 +68,19 @@ public class EventIndexMonth extends Activity
 	private static final int FP = ViewGroup.LayoutParams.FILL_PARENT;
 	private static final int WC = ViewGroup.LayoutParams.WRAP_CONTENT;
 
+	/* thread callback handler status */
+	public static final int THREAD_DONE = (1 << 0);
+
 	/* request status */
 	private static int REQUEST_SEARCH = (1 << 0);
 	private static int REQUEST_SEARCH_ALL = (1 << 1);
 	private static int REQUEST_SEARCH_MONTH = (1 << 2);
 	private static int REQUEST_KEY_SELECT = (1 << 3);
+	private static int REQUEST_SET_GOOGLE_ACCOUNT_INFO = (1 << 4);
+	private static int REQUEST_GCAL_GET = (1 << 5);
 
 	/* threashold of acceleration amount */
-	private static float HORIZONTAL_ACCELERATION = 5f;
+	private static float HORIZONTAL_ACCELERATION = 9f;
 
 	/* current activity status */
 	private static int statusSuspend = 0;
@@ -89,6 +100,8 @@ public class EventIndexMonth extends Activity
 	private static final float dateTextSize = 20f;
 	private static final float columnSize = 20f;
 	private static final float outsideColumnSize = 15f;
+	
+	private static ServerInterface serverInterface;
 
 	/* following member is used at board-switch */
 	private ObjectContainer currentContainer;
@@ -98,6 +111,33 @@ public class EventIndexMonth extends Activity
 
 	/* This member is for search processing */
 	private int searchType = 0;
+
+	/* This member describe communication channel to server */
+
+	public static boolean execSyncGoogleCalendar(Context index) {
+		boolean ret = false;
+		Log.d(TAG, "[execSyncGoogleCalendar] called");
+
+		if(serverInterface != null) {
+			//ret = serverInterface.dosyncGoogleCalendar(this);
+		}
+
+		return ret;
+	}
+
+	private final Handler progressiveProcessingHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			switch(msg.what) {
+			case THREAD_DONE:
+
+				Log.d(TAG, "[ProgressiveProcessing] CallbackHandler " + msg.obj);
+
+				finish();
+				break;
+			}
+		}
+	};
 
 	AnimationListener animationListener = new Animation.AnimationListener() {
 		public void onAnimationCancel(Animation animation) {
@@ -130,14 +170,17 @@ public class EventIndexMonth extends Activity
 
 				/* this means amount of horizontal axis acceleration */
 				float amountHorizontalMotion = event.values[0];
+				boolean sensorStatus = false;
 
 				if(motionStatus == 0 && amountHorizontalMotion > HORIZONTAL_ACCELERATION) {
 					motionStatus = 1;
+					sensorStatus = true;
 				} else if(motionStatus == 0 && amountHorizontalMotion < HORIZONTAL_ACCELERATION * (-1)) {
 					motionStatus = -1;
+					sensorStatus = true;
 				}
 
-				if(motionStatus == 1 || motionStatus == -1) {
+				if(sensorStatus && (motionStatus == 1 || motionStatus == -1)) {
 
 					/* this line means prevention for duplicate calling */
 					Log.d(TAG, String.format("[onSensorChanged] x:%f, y:%f, z:%f",
@@ -238,12 +281,14 @@ public class EventIndexMonth extends Activity
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		ServerInterface serverInterface = new ServerInterface();
+
+		/* create server communication channel */
+		serverInterface = new ServerInterface();
 
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.eventindex_month);
 
-		//serverInterface.doSync(this);
+		//serverInterface.doSyncAirone();
 
 		setHoliday();
 	
@@ -261,7 +306,7 @@ public class EventIndexMonth extends Activity
 		super.onCreateOptionsMenu(menu);
 
 		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.menu, menu);
+		inflater.inflate(R.menu.menu_index_month, menu);
 
 		MenuItem itemSearchAll = menu.findItem(R.id.menuSearchAll);
 		MenuItem itemSearchMonth = menu.findItem(R.id.menuSearchMonth);
@@ -279,11 +324,9 @@ public class EventIndexMonth extends Activity
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		boolean ret = false;
-
 		switch(item.getItemId()) {
 			case R.id.menuLogout:
-				File file = new File(ServerInterface.InfoFilepath);
+				File file = new File(AppConfig.APP_CONFIG_PATH);
 				if(file.exists()) {
 					Log.d(TAG, "[clickEvent] do delete file");
 	
@@ -291,8 +334,6 @@ public class EventIndexMonth extends Activity
 				}
 
 				EventIndexMonth.this.finish();
-
-				ret = true;
 				break;
 			case R.id.menuSearchAll:
 				searchType = REQUEST_SEARCH_ALL;
@@ -304,13 +345,54 @@ public class EventIndexMonth extends Activity
 				//searchSchedule(ScheduleContent.grepScheduleFromMonth(currentDate.getTime()));
 				searchSchedule();
 				break;
+			case R.id.menuSyncGoogleCalendar:
+				if(ServerInterface.isLogined()) {
+					Intent intent = new Intent(this, ProgressiveProcessing.class);
+					intent.putExtra(ProgressiveProcessing.KEY_COMMENT, "google カレンダーから予定を取得しています。");
+	
+					startActivityForResult(intent, REQUEST_GCAL_GET);
+				} else {
+					Intent intent = new Intent(this, InputTwoColumns.class);
+
+					intent.putExtra(InputTwoColumns.KEY_TITLE, "google account を入力してください");
+
+					startActivityForResult(intent, REQUEST_SET_GOOGLE_ACCOUNT_INFO);
+				}
+				break;
+			case R.id.menuShowAllDocuments:
+				ArrayList<String> idArray = new ArrayList<String> ();
+
+				for(int i=0; i<ScheduleContent.documents.size(); i++) {
+					ScheduleContent doc = ScheduleContent.documents.get(i);
+
+					idArray.add(doc.getId());
+				}
+
+				if(idArray.size() > 0) {
+					Intent intent = new Intent(this, EventListView.class);
+
+					intent.putExtra(EventListView.KEY_DATE, currentDate);
+					intent.putStringArrayListExtra(EventListView.KEY_DOCUMENTS, idArray);
+
+					startActivity(intent);
+				} else {
+					Toast.makeText(this, "該当する予定が見つかりません。", Toast.LENGTH_LONG).show();
+				}
+
+				break;
+			case R.id.menuShowConfig:
+				Intent intent = new Intent(this, ShowConfig.class);
+
+				startActivity(intent);
+				break;
 		}
 
-		return ret;
+		return true;
 	}
 	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
 		if(resultCode == RESULT_OK) {
 			if(requestCode == REQUEST_SEARCH) {
 				ArrayList<String> candidates = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
@@ -353,6 +435,28 @@ public class EventIndexMonth extends Activity
 					}
 				} else {
 					Toast.makeText(this, "該当する予定が見つかりません。", Toast.LENGTH_LONG).show();
+				}
+			} else if(requestCode == REQUEST_SET_GOOGLE_ACCOUNT_INFO) {
+				String id = data.getStringExtra(InputTwoColumns.KEY_FIRST_COLUMN);
+				String passwd = data.getStringExtra(InputTwoColumns.KEY_SECOND_COLUMN);
+
+				Toast.makeText(this, id + ", " + passwd, Toast.LENGTH_LONG).show();
+
+				AppConfig.setConfig("googleLoginId", id);
+				AppConfig.setConfig("googleLoginPasswd", passwd);
+					
+				Intent intent = new Intent(this, ProgressiveProcessing.class);
+				intent.putExtra(ProgressiveProcessing.KEY_COMMENT, "google カレンダーから予定を取得しています。");
+
+				startActivityForResult(intent, REQUEST_GCAL_GET);
+			} else if(requestCode == REQUEST_GCAL_GET) {
+				/* get result */
+				String ret = data.getStringExtra(ProgressiveProcessing.KEY_STATUS);
+
+				if(ret.equals("true")) {
+					Toast.makeText(this, "予定取得完了", Toast.LENGTH_LONG).show();
+				} else {
+					Toast.makeText(this, "予定の取得に失敗しました", Toast.LENGTH_LONG).show();
 				}
 			}
 		}

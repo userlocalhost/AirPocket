@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:padding="5sp"
+	>
+	<TextView
+		android:id="@+id/first_input_label"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:paddingTop="20sp"
+		android:text="login ID : "
+		/>
+	<EditText
+		android:id="@+id/first_input"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_toRightOf="@id/first_input_label"
+		android:layout_alignBaseline="@id/first_input_label"
+		android:singleLine="true"
+		android:inputType="textEmailAddress"
+		/>
+	<TextView
+		android:id="@+id/second_input_label"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/first_input_label"
+		android:paddingTop="25sp"
+		android:paddingBottom="20sp"
+		android:text="password : "
+		/>
+	<EditText
+		android:id="@+id/second_input"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/first_input_label"
+		android:layout_toRightOf="@id/second_input_label"
+		android:layout_alignBaseline="@id/second_input_label"
+		android:singleLine="true"
+		android:inputType="textPassword"
+		/>
+	<Button
+		android:id="@+id/submit"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/second_input_label"
+		android:text="OK"
+		/>
+	<Button
+		android:id="@+id/cancel"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/second_input_label"
+		android:layout_toRightOf="@id/submit"
+		android:text="cancel"
+		/>
+</RelativeLayout>

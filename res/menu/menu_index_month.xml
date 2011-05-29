@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+	<item
+		android:id="@+id/menuLogout"
+		android:title="@string/menu_logout"
+		/>
+	<item
+		android:id="@+id/menuSyncGoogleCalendar"
+		android:title="@string/menu_sync_google_calendar"
+		/>
+	<item
+		android:id="@+id/menuSearchAll"
+		android:title="@string/menu_search_all"
+		/>
+	<item
+		android:id="@+id/menuSearchMonth"
+		android:title="@string/menu_search_month"
+		/>
+	<item
+		android:id="@+id/menuShowAllDocuments"
+		android:title="@string/menu_show_all"
+		/>
+	<item
+		android:id="@+id/menuShowConfig"
+		android:title="@string/menu_show_config"
+		/>
+</menu>

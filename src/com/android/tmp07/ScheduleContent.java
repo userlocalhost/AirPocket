@@ -12,8 +12,8 @@ public class ScheduleContent
 {
 	/* Class member */
 	public static LinkedList<ScheduleContent> documents = new LinkedList<ScheduleContent>();
-	public static int Allday = 1<<0;
-	public static int Multiday = 1<<1;
+	public static int Allday = (1<<0);
+	public static int Multiday = (1<<1);
 
 	private static final String TAG = "ScheduleContent";
 	private ArrayList overlappedDocumentId = new ArrayList(); 
@@ -31,11 +31,15 @@ public class ScheduleContent
 
 	private LinkedList<String> attendee;
 	
+	/* This member used for Google Calendar Sync */
+	private String editURL;
+	
 	ScheduleContent() {
 		this.status = 0;
 		this.id = UUID.randomUUID().toString();
 		this.resourceLabel = null;
 		this.attendee = null;
+		this.editURL = null;
 	}
 
 	ScheduleContent(String subject, String summary, Date start, Date end) {
@@ -47,6 +51,7 @@ public class ScheduleContent
 		this.id = UUID.randomUUID().toString();
 		this.resourceLabel = null;
 		this.attendee = null;
+		this.editURL = null;
 	}
 
 	/* This is a assistant method */
@@ -272,6 +277,10 @@ public class ScheduleContent
 		this.index = index;
 	}
 
+	public void setEditURL(String url) {
+		this.editURL = url;
+	}
+
 	public void setStartTime(Date time) {
 		this.startTime = time;
 	}
@@ -302,6 +311,10 @@ public class ScheduleContent
 
 	public void setResourceLabel(String label) {
 		this.resourceLabel = label;
+	}
+
+	public String getEditURL() {
+		return this.editURL;
 	}
 
 	public Date getStartTime() {
@@ -345,6 +358,11 @@ public class ScheduleContent
 	}
 
 	public void regist() {
+
+		if(startTime == null || endTime == null || hasSameSchedule()) {
+			return;
+		}
+
 		ArrayList indexList = new ArrayList();
 		int regStartMinutes = (this.startTime.getHours() * 60) + this.startTime.getMinutes();
 		int regEndMinutes = (this.endTime.getHours() * 60) + this.endTime.getMinutes();
@@ -404,5 +422,28 @@ public class ScheduleContent
 		Log.d(TAG, String.format("[checkSameDate] aDate:%d, bDate:%d", aDate, bDate));
 
 		return (aDate == bDate);
+	}
+
+	/*
+	 * @return :
+	 *	'false' means there is no document which is same of ditected ScheduleContent.
+	 *	'true' is otherwise.
+	 * */
+	private boolean hasSameSchedule() {
+		boolean ret = false;
+
+		for(int i=0; i<documents.size(); i++) {
+			ScheduleContent doc = documents.get(i);
+
+			Log.d(TAG, String.format("[hasSameSchedule] check %s == %s", id, doc.getId()));
+
+			if(doc.getId().equals(id)) {
+				Log.d(TAG, String.format("[hasSameSchedule] check %s == %s", id, doc.getId()));
+				ret = true;
+				break;
+			}
+		}
+
+		return ret;
 	}
 }

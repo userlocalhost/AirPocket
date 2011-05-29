@@ -15,11 +15,21 @@
 	<string name="keyWeekCount">key of weekCount</string>
 	<string name="keyBackgroundColor">key of backgroundColor</string>
 
-	<!-- Menu Items -->
+	<!-- Menu Items on EventIndexMonth -->
 	<string name="menu_logout">ログアウト</string>
+	<string name="menu_sync_google_calendar">予定の取得</string>
 	<string name="menu_search_all">検索（全体）</string>
 	<string name="menu_search_month">検索（表示月）</string>
+	<string name="menu_show_all">全予定表示</string>
+	<string name="menu_show_config">設定表示</string>
+	
+	<!-- Menu Items on EventViewer -->
+	<string name="menu_send_google_calendar">予定の同期</string>
 
 	<!-- for search title -->
 	<string name="title_search_candidate">[検索キーワード候補]</string>
+
+	<!-- to access and manipulate for google calendar -->
+	<string name="ClientLoginURL">https://www.google.com/accounts/ClientLogin</string>
+	<string name="UserCalendarURL">https://www.google.com/calendar/feeds/user.localhost2000%40gmail.com/private/full</string>
 </resources>

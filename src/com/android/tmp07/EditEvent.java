@@ -93,9 +93,6 @@ public class EditEvent extends Activity
 	OnClickListener submitEvent = new View.OnClickListener(){
 		public void onClick(View v){
 			if(startTime.getTime().compareTo(endTime.getTime()) < 0) {
-				if((requestStatus & StatusEdit) > 0) {
-					document.removeObj();
-				}
 				makeDocument(startTime.getTime(), endTime.getTime());
 	
 				Intent i = new Intent();
@@ -105,7 +102,7 @@ public class EditEvent extends Activity
 				i.putExtra(KEY_STARTTIME, startTime.getTime());
 				i.putExtra(KEY_ENDTIME, endTime.getTime());
 	
-				setResult(RESULT_OK, i);
+				setResult(Activity.RESULT_OK, i);
 	
 				finish();
 			} else {
@@ -130,7 +127,7 @@ public class EditEvent extends Activity
 				Log.d(TAG, "[debug] startTime > endTime");
 			}
 
-			setResult(RESULT_CANCELED);
+			setResult(Activity.RESULT_CANCELED);
 			finish();
 		}
 	};
@@ -394,11 +391,21 @@ public class EditEvent extends Activity
 
 	private void makeDocument(Date startTime, Date endTime) {
 		CheckBox checkAllDay = (CheckBox) findViewById(R.id.check_allday);
+		String subject = ((TextView) findViewById(R.id.subject_input)).getText().toString();
+		String context = ((TextView) findViewById(R.id.context_input)).getText().toString();
+		ScheduleContent newDoc;
+			
+		if((requestStatus & StatusEdit) > 0) {
+			newDoc = document;
 
-		ScheduleContent newDoc = new ScheduleContent(
-					((TextView) findViewById(R.id.subject_input)).getText().toString(),
-					((TextView) findViewById(R.id.context_input)).getText().toString(),
-					startTime, endTime);
+			newDoc.setSubject(subject);
+			newDoc.setContext(context);
+			newDoc.setStartTime(startTime);
+			newDoc.setEndTime(endTime);
+		} else {
+			/* create new Document */
+			newDoc= new ScheduleContent(subject, context, startTime, endTime);
+		}
 
 		/* Is newDoc across multiple days */
 		if(! checkSameDate(startTime, endTime)) {

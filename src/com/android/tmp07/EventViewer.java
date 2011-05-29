@@ -11,6 +11,9 @@ import android.widget.TableLayout;
 
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import android.app.TimePickerDialog;
 import android.app.AlertDialog;
@@ -37,6 +40,8 @@ public class EventViewer extends Activity
 		"com.android.tmp07.eventviewer.status";
 
 	private static final String TAG = "EventViewer";
+	
+	private static int REQUEST_SET_GOOGLE_ACCOUNT_INFO = (1 << 0);
 
 	private Calendar currentDate;
 	private ScheduleContent document;
@@ -64,7 +69,10 @@ public class EventViewer extends Activity
 				.setPositiveButton("OK",
 					new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dlg, int sumthin) {
+							Intent intent = new Intent();
 							document.removeObj();
+
+							setResult(RESULT_OK, intent);
 							finish();
 						}
 					})
@@ -136,5 +144,48 @@ public class EventViewer extends Activity
 
 			//contextView.setBackgroundResource(resourceId);
 		//}
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
+
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.menu_event_viewer, menu);
+
+		return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch(item.getItemId()) {
+		case R.id.menuSendGoogleCalendar:
+			if(ServerInterface.isLogined()) {
+				ServerInterface.putDocument(document, this);
+			} else {
+				Intent intent = new Intent(this, InputTwoColumns.class);
+
+				intent.putExtra(InputTwoColumns.KEY_TITLE, "google account を入力してください");
+
+				startActivityForResult(intent, REQUEST_SET_GOOGLE_ACCOUNT_INFO);
+			}
+			break;
+		}
+		return true;
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if(resultCode == RESULT_OK) {
+			if(requestCode == REQUEST_SET_GOOGLE_ACCOUNT_INFO) {
+				String id = data.getStringExtra(InputTwoColumns.KEY_FIRST_COLUMN);
+				String passwd = data.getStringExtra(InputTwoColumns.KEY_SECOND_COLUMN);
+				
+				AppConfig.setConfig("googleLoginId", id);
+				AppConfig.setConfig("googleLoginPasswd", passwd);
+				
+				ServerInterface.putDocument(document, this);
+			}
+		}
 	}
 }
