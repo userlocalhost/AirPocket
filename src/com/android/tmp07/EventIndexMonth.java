@@ -459,6 +459,10 @@ public class EventIndexMonth extends Activity
 					Toast.makeText(this, "予定の取得に失敗しました", Toast.LENGTH_LONG).show();
 				}
 			}
+		} else {
+			if(requestCode == REQUEST_SET_GOOGLE_ACCOUNT_INFO) {
+				Toast.makeText(this, "認証に失敗しました", Toast.LENGTH_LONG).show();
+			}
 		}
 	}
 
@@ -536,10 +540,14 @@ public class EventIndexMonth extends Activity
 			int columnNum = 6;
 			int weekCount;
 			int dayCount = 1;
-			int daysOfMonth = getDaysOfMonth(tmpCal.get(Calendar.MONTH));
-			int daysOfLastMonth = getDaysOfMonth(tmpCal.get(Calendar.MONTH) - 1);
+			int daysOfMonth = getDaysOfMonth(tmpCal.get(Calendar.YEAR), tmpCal.get(Calendar.MONTH));
+			/* No problem, if this doesn't rollback year parameter for considering 
+			 * when current month is December. */
+			int daysOfLastMonth = getDaysOfMonth(tmpCal.get(Calendar.YEAR), tmpCal.get(Calendar.MONTH) - 1);
 			int columnWidth = (d.getWidth() / 7);
 			int columnWidthLeftover = (d.getWidth() % 7);
+
+			Log.d(TAG, "[generateMonthView] daysOfMonth : " + daysOfMonth);
 
 			//mainBoard.setStretchAllColumns(true);
 			mainBoard.setGravity(Gravity.CENTER);
@@ -723,29 +731,20 @@ public class EventIndexMonth extends Activity
 		}
 	}
 
-	private int getDaysOfMonth(int currentMonth) {
-		Calendar cal = Calendar.getInstance();
-		int nextMonth = currentMonth + 1;
-		int retDays = -1;
+	private int getDaysOfMonth(int y, int m) {
+		int ret;
 
-		if(currentMonth > 11){
-			currentMonth = 0;
-		}else if(currentMonth < 0){
-			currentMonth = 11;
+		if(m == 1 && y % 4 == 0 && y % 100 != 0 || y % 400 == 0) {
+			ret = 29;
+		} else if(m == 0 || m == 2 || m == 4 || m == 6 || m == 7 || m == 9 || m == 11) {
+			ret = 31;
+		} else if(m == 3 || m == 5 || m == 8 || m == 10) {
+			ret = 30;
+		} else {
+			ret = 28;
 		}
 
-		if(currentMonth == 11){
-			/*set days for December*/
-			retDays = 31;
-		}else{
-			cal.set(Calendar.MONTH, nextMonth);
-			retDays = cal.get(Calendar.DAY_OF_YEAR);
-	
-			cal.set(Calendar.MONTH, currentMonth);
-			retDays -= cal.get(Calendar.DAY_OF_YEAR);
-		}
-
-		return retDays;
+		return ret;
 	}
 
 	private void generateWeekLabel(TableLayout mainBoard) {

@@ -8,8 +8,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.IOException;
+
 public class ScheduleContent
 {
+	public static final String SCHEDULE_CONTENT_DIR = "/sdcard/AirPocket/ScheduleContent/";
 	/* Class member */
 	public static LinkedList<ScheduleContent> documents = new LinkedList<ScheduleContent>();
 	public static int Allday = (1<<0);
@@ -412,6 +420,9 @@ public class ScheduleContent
 		this.setPosition(indexList.size(), targetIndex);
 
 		documents.add(this);
+
+		boolean saveRet = doSave();
+		Log.d(TAG, "[regist] saveRet : " + saveRet);
 	}
 
 	/* private processing */
@@ -444,6 +455,29 @@ public class ScheduleContent
 			}
 		}
 
+		return ret;
+	}
+
+	/* save current object to file */
+	private boolean doSave() {
+		File file = new File(SCHEDULE_CONTENT_DIR + this.id);
+		boolean ret = true;
+
+		if(! file.getParentFile().exists()) {
+			file.getParentFile().getParentFile().mkdirs();
+		}
+
+		try {
+			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file));
+	
+			oos.writeObject(this);
+			oos.flush();
+			oos.close();
+		} catch(IOException e) {
+			Log.e(TAG, "[doSave] " + e);
+			ret = false;
+		}
+		
 		return ret;
 	}
 }

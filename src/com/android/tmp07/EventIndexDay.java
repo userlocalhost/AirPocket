@@ -103,9 +103,7 @@ public class EventIndexDay extends Activity
 	{
 		super.onActivityResult(requestCode, resultCode, data);
 
-		if(requestCode == EditEvent.StatusEdit && resultCode == RESULT_OK) {
-			redrawAlldayEvents();
-		}
+		redrawAlldayEvents();
 	}
 
 	protected void showEditActivity(int hour, int minute) {

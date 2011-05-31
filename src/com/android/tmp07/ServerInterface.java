@@ -43,7 +43,9 @@ public class ServerInterface {
 	private static final String TAG = "ServerInterface";
 	private static final String CALENDAR_SOURCE = "ArielNetworks-AirPocket-v0.1";
 	private static final String ClientLoginURL = "https://www.google.com/accounts/ClientLogin";
-	private static final String UserCalendarURL = "http://www.google.com/calendar/feeds/default/private/full";
+	private static final String UserCalendarURL = "https://www.google.com/calendar/feeds/default/private/full";
+	//private static final String UserCalendarURL = "http://www.google.com/calendar/feeds/smoke.airone%40gmail.com/private/full";
+	//private static final String UserCalendarURL = "https://www.google.com/calendar/feeds/smoke.airone%40gmail.com/private/full";
 
 	/* These URL may describe am or bm */
 	private static final String ReadDocumentURL = "";
@@ -127,7 +129,7 @@ public class ServerInterface {
 
 			String responseXML = gcalPostRequest(requestURL, sendData, protocol);
 
-			if(doc.getEditURL() == null && responseXML != null) {
+			if(responseXML != null) {
 				updateDocumentStatus(doc, responseXML);
 			}
 
@@ -136,8 +138,29 @@ public class ServerInterface {
 			ret = false;
 		}
 
+		return ret;
+	}
 
-		Log.d(TAG, "sendData : " + sendData);
+	public static boolean delDocument(ScheduleContent doc) {
+		boolean ret = false;
+		String loginId = AppConfig.getConfig("googleLoginId");
+		String loginPasswd = AppConfig.getConfig("googleLoginPasswd");
+		String requestURL = doc.getEditURL();
+
+		if(loginId == null || loginPasswd == null) {
+			return false;
+		}
+
+		if(accessToken == null) {
+			accessToken = gcalClientLogin(loginId, loginPasswd);
+		}
+
+		if(accessToken != null && requestURL != null) {
+			int responseCode = gcalRequest(requestURL, "DELETE");
+
+			Log.d(TAG, "[delDocument] responseCode : " + responseCode);
+			ret = true;
+		}
 
 		return ret;
 	}
@@ -177,7 +200,7 @@ public class ServerInterface {
 	private static boolean parseFromXML(String xmlContent) {
 		boolean ret = true;
 
-		Log.d(TAG, "[parseFromXML] xmlContent : " + xmlContent);
+		Log.d(TAG, String.format("[parseFromXML] xmlContent (%d) : %s", xmlContent.length(), xmlContent));
 
 		try {
 			XmlPullParser parser = XmlPullParserFactory.newInstance().newPullParser();
@@ -191,21 +214,34 @@ public class ServerInterface {
 			}
 			
 			
-			for(int e = parser.getEventType(); e != XmlPullParser.END_DOCUMENT; e = parser.next()) {
+			for(int e = parser.getEventType(); e != XmlPullParser.END_DOCUMENT;) {
+				boolean rollFlag = true;
+
 				if(e == XmlPullParser.START_TAG) {
 					String elemName = parser.getName();
+					
+					Log.d(TAG, String.format("[parseFromXML] tag : %s", elemName));
 
 					if(elemName.equals("entry")) {
 						ScheduleContent doc = new ScheduleContent();
+							
+						Log.d(TAG, String.format("[parseFromXML] call parseEntry()"));
 						
 						/* parse inputXML and initialize ScheduleContent object */
 						ret = parseEntry(parser, doc);
-						if(! ret) {
-							break;
+						if(ret) {
+							Log.d(TAG, String.format("[parseFromXML] regist document"));
+							doc.regist();
 						}
 
-						doc.regist();
+						rollFlag = false;
 					}
+				} else if(e == XmlPullParser.TEXT) {
+					Log.d(TAG, String.format("[parseFromXML] text : %s", parser.getText()));
+				}
+
+				if(rollFlag) {
+					e = parser.next();
 				}
 			}
 
@@ -239,6 +275,8 @@ public class ServerInterface {
 				if(e == XmlPullParser.START_TAG) {
 					depth++;
 					String elemName = parser.getName();
+
+					Log.d(TAG, String.format("[parseEntry](%d) %s", depth, elemName));
 					
 					if(elemName.equals("gd:when")) {
 						String strStartTime = parser.getAttributeValue(null, "startTime");
@@ -246,8 +284,14 @@ public class ServerInterface {
 
 						Date startTime = convStr2Date(strStartTime);
 						Date endTime = convStr2Date(strEndTime);
+							
+						Log.d(TAG, String.format("[parseEntry](%d) startTime:%s", depth, startTime));
+						Log.d(TAG, String.format("[parseEntry](%d) endTime:%s", depth, endTime));
+						Log.d(TAG, String.format("[parseEntry](%d) strStartTime:%s", depth, strStartTime));
+						Log.d(TAG, String.format("[parseEntry](%d) strEndTime:%s", depth, strEndTime));
 
 						if(Pattern.compile("^([0-9]+)-([0-9]+)-([0-9]+)$").matcher(strStartTime).find()) {
+							Log.d(TAG, String.format("[parseEntry](%d) set wholeday", depth));
 							doc.setStatus(ScheduleContent.Allday);
 							endTime.setDate(endTime.getDate() - 1);
 						}
@@ -256,16 +300,27 @@ public class ServerInterface {
 							doc.setStartTime(startTime);
 							doc.setEndTime(endTime);
 						}
+					} else if(elemName.equals("link")) {
+						String relStr = parser.getAttributeValue(null, "rel");
+
+						if(relStr != null && relStr.equals("edit")) {
+							String hrefStr = parser.getAttributeValue(null, "href");
+	
+							doc.setEditURL(hrefStr);
+						}
 					}
 	
 					e = parser.next();
 	
 					if(e == XmlPullParser.TEXT) {
 						if(elemName.equals("title")) {
+							Log.d(TAG, String.format("[parseEntry](%d) title:%s", depth, parser.getText()));
 							doc.setSubject(parser.getText());
 						} else if(elemName.equals("content")) {
+							Log.d(TAG, String.format("[parseEntry](%d) content:%s", depth, parser.getText()));
 							doc.setContext(parser.getText());
 						} else if(elemName.equals("id")) {
+							Log.d(TAG, String.format("[parseEntry](%d) id:%s", depth, parser.getText()));
 							doc.setId(parser.getText());
 						}
 
@@ -427,9 +482,9 @@ public class ServerInterface {
 
 			ret = payload.toString();
 		} catch (FileNotFoundException e) {
-			Log.e(TAG, "[gcalGetRequest] " + e.getMessage());
+			Log.e(TAG, "[gcalClientLogin] " + e.getMessage());
 		} catch (IOException e) {
-			Log.e(TAG, "[gcalGetRequest] " + e.getMessage());
+			Log.e(TAG, "[gcalClientLogin] " + e.getMessage());
 		}
 
 		Log.d(TAG, "[gcalClientLogin] return : " + payload.toString());
@@ -451,11 +506,12 @@ public class ServerInterface {
 			con.addRequestProperty("Authorization", "GoogleLogin auth=" + accessToken); con.setDoInput(true);
 			con.connect();
 	
-			BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"), 100000);
 
 			String line;
 			while((line = reader.readLine()) != null) {
 				payload.append(line);
+				Log.d(TAG, String.format("[gcalGetRequest] [%d] > %s", line.length(), line));
 			}
 			
 			reader.close();
@@ -466,6 +522,36 @@ public class ServerInterface {
 			Log.e(TAG, "[gcalGetRequest] " + e.getMessage());
 		} catch (IOException e) {
 			Log.e(TAG, "[gcalGetRequest] " + e.getMessage());
+		}
+
+		return ret;
+	}
+
+	/* 
+	 * This routine return request code. 
+	 * When something error is occured this routine returns -1.
+	 * */
+	private static int gcalRequest(String urlStr, String protocol) {
+		int ret = -1;
+
+		try {
+			URL url = new URL(urlStr);
+	
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.setReadTimeout(50000);
+			con.setRequestMethod(protocol);
+			con.addRequestProperty("Accept-Charset", "UTF-8");
+			con.addRequestProperty("Content-Type", "application/atom+xml");
+			con.addRequestProperty("Authorization", "GoogleLogin auth=" + accessToken); con.setDoInput(true);
+			con.setDoOutput(true);
+			con.setInstanceFollowRedirects(true);
+			con.connect();
+		
+			ret = con.getResponseCode();
+			
+			con.disconnect();
+		} catch (IOException e) {
+			Log.e(TAG, "IOException", e);
 		}
 
 		return ret;
@@ -603,7 +689,7 @@ public class ServerInterface {
 
 		return ret;
 	}
-
+	
 	private static void updateDocumentStatus(ScheduleContent doc, String xmlContent) {
 		try {
 			XmlPullParser parser = XmlPullParserFactory.newInstance().newPullParser();
@@ -622,12 +708,9 @@ public class ServerInterface {
 					String elemName = parser.getName();
 					String relStr = parser.getAttributeValue(null, "rel");
 
-					if(elemName.equals("link") && relStr != null && relStr.equals("edit")) {
-						String hrefStr = parser.getAttributeValue(null, "href");
-						
-						Log.d(TAG, "[updateDocumentStatus] editURL : " + hrefStr);
+					if(elemName.equals("entry")) {
+						parseEntry(parser, doc);
 
-						doc.setEditURL(hrefStr);
 						break;
 					}
 				}

@@ -69,9 +69,13 @@ public class EventViewer extends Activity
 				.setPositiveButton("OK",
 					new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dlg, int sumthin) {
-							Intent intent = new Intent();
+
+							/* delete google calendars' one, if there is */
+							ServerInterface.delDocument(document);
+
 							document.removeObj();
 
+							Intent intent = new Intent();
 							setResult(RESULT_OK, intent);
 							finish();
 						}
@@ -161,7 +165,12 @@ public class EventViewer extends Activity
 		switch(item.getItemId()) {
 		case R.id.menuSendGoogleCalendar:
 			if(ServerInterface.isLogined()) {
-				ServerInterface.putDocument(document, this);
+				boolean ret = ServerInterface.putDocument(document, this);
+				if(ret) {
+					Toast.makeText(this, "予定を同期させました", Toast.LENGTH_LONG).show();
+				} else {
+					Toast.makeText(this, "予定の同期に失敗しました", Toast.LENGTH_LONG).show();
+				}
 			} else {
 				Intent intent = new Intent(this, InputTwoColumns.class);
 
@@ -176,16 +185,21 @@ public class EventViewer extends Activity
 	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if(resultCode == RESULT_OK) {
-			if(requestCode == REQUEST_SET_GOOGLE_ACCOUNT_INFO) {
-				String id = data.getStringExtra(InputTwoColumns.KEY_FIRST_COLUMN);
-				String passwd = data.getStringExtra(InputTwoColumns.KEY_SECOND_COLUMN);
-				
-				AppConfig.setConfig("googleLoginId", id);
-				AppConfig.setConfig("googleLoginPasswd", passwd);
-				
-				ServerInterface.putDocument(document, this);
+		if(resultCode == RESULT_OK && requestCode == REQUEST_SET_GOOGLE_ACCOUNT_INFO) {
+			String id = data.getStringExtra(InputTwoColumns.KEY_FIRST_COLUMN);
+			String passwd = data.getStringExtra(InputTwoColumns.KEY_SECOND_COLUMN);
+			
+			AppConfig.setConfig("googleLoginId", id);
+			AppConfig.setConfig("googleLoginPasswd", passwd);
+			
+			boolean ret = ServerInterface.putDocument(document, this);
+			if(ret) {
+				Toast.makeText(this, "予定を同期させました", Toast.LENGTH_LONG).show();
+			} else {
+				Toast.makeText(this, "予定の同期に失敗しました", Toast.LENGTH_LONG).show();
 			}
+		} else if(requestCode == REQUEST_SET_GOOGLE_ACCOUNT_INFO) {
+			Toast.makeText(this, "認証に失敗しました", Toast.LENGTH_LONG).show();
 		}
 	}
 }
