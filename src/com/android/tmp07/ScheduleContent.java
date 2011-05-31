@@ -291,7 +291,9 @@ public class ScheduleContent implements Serializable
 						ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
 						
 						ScheduleContent doc = (ScheduleContent) ois.readObject();
-						documents.add(doc);
+
+						/* add current ScheduleContent object to documents list */
+						doc.append();
 	
 						Log.d(TAG, "[resumeFromStorage] subject : " + doc.getSubject());
 					} catch(java.io.IOException e) {
@@ -517,6 +519,26 @@ public class ScheduleContent implements Serializable
 			ret = false;
 		}
 		
+		return ret;
+	}
+
+	/* This method prevent to duplicate appending to the 'document' static object */
+	private boolean append() {
+		boolean ret = true;
+
+		for(int i=0; i<documents.size(); i++) {
+			ScheduleContent doc = documents.get(i);
+
+			if(doc.getId().equals(this.id)) {
+				ret = false;
+				break;
+			}
+		}
+		
+		if(ret) {
+			documents.add(this);
+		}
+
 		return ret;
 	}
 }
