@@ -13,9 +13,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.IOException;
+import java.io.Serializable;
 
-public class ScheduleContent
+public class ScheduleContent implements Serializable
 {
 	public static final String SCHEDULE_CONTENT_DIR = "/sdcard/AirPocket/ScheduleContent/";
 	/* Class member */
@@ -271,6 +271,45 @@ public class ScheduleContent
 		return ret;
 	}
 
+	public static boolean resumeFromStorage() {
+		boolean ret = false;
+		File dir = new File(SCHEDULE_CONTENT_DIR);
+
+		if(dir.exists()) {
+			String[] files = dir.list();
+
+			for(int i=0; i<files.length; i++) {
+				String idPath = files[i];
+				File file = new File(SCHEDULE_CONTENT_DIR + idPath);
+					
+				Log.d(TAG, "[resumeFromStorage] idPath : " + idPath);
+
+				if(file.exists()) {
+					Log.d(TAG, "[resumeFromStorage] idPath (exist): " + idPath);
+
+					try {
+						ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
+						
+						ScheduleContent doc = (ScheduleContent) ois.readObject();
+						documents.add(doc);
+	
+						Log.d(TAG, "[resumeFromStorage] subject : " + doc.getSubject());
+					} catch(java.io.IOException e) {
+						Log.e(TAG, "[resumeFromStorage] " + e);
+					} catch(java.lang.ClassNotFoundException e) {
+						Log.e(TAG, "[resumeFromStorage] " + e);
+					}
+				} else {
+					Log.e(TAG, "[resumeFromStorage] idPath doesn't exist : " + idPath);
+				}
+			}
+
+			ret = true;
+		}
+
+		return ret;
+	}
+
 	/* get/set methods */
 	public void setDepth(int depth) {
 		this.depth = depth;
@@ -421,7 +460,7 @@ public class ScheduleContent
 
 		documents.add(this);
 
-		boolean saveRet = doSave();
+		boolean saveRet = saveToStorage();
 		Log.d(TAG, "[regist] saveRet : " + saveRet);
 	}
 
@@ -459,12 +498,12 @@ public class ScheduleContent
 	}
 
 	/* save current object to file */
-	private boolean doSave() {
+	private boolean saveToStorage() {
 		File file = new File(SCHEDULE_CONTENT_DIR + this.id);
 		boolean ret = true;
 
 		if(! file.getParentFile().exists()) {
-			file.getParentFile().getParentFile().mkdirs();
+			file.getParentFile().mkdirs();
 		}
 
 		try {
@@ -473,8 +512,8 @@ public class ScheduleContent
 			oos.writeObject(this);
 			oos.flush();
 			oos.close();
-		} catch(IOException e) {
-			Log.e(TAG, "[doSave] " + e);
+		} catch(java.io.IOException e) {
+			Log.e(TAG, "[saveToStorage] " + e);
 			ret = false;
 		}
 		

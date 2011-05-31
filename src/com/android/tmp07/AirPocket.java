@@ -68,6 +68,8 @@ public class AirPocket extends Activity
 		} else {
 			findViewById(R.id.loginButton).setOnClickListener(clickEvent);
 		}
+
+		ScheduleContent.resumeFromStorage();
 	}
 
 	private void openEventIndex() {
