@@ -64,6 +64,8 @@ public class EditEvent extends Activity
 
 	private static final String TAG = "EditEvent";
 	private static final String TIME_CONFIG_ALERT = "終了時刻が開始時刻の前に設定されています。";
+	private static final String BLANK_ADDRESS_ALERT = "アドレス帳に Email 登録がありません。";
+	private static final String NONCOMPATIBLE_ALERT = "アドレス帳に対応していません。";
 	
 	private static final int FP = ViewGroup.LayoutParams.FILL_PARENT;
 	private static final int WC = ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -137,18 +139,26 @@ public class EditEvent extends Activity
 			Cursor cursor = managedQuery(Contacts.ContactMethods.CONTENT_EMAIL_URI, null, null, null, null);
 			int columnIndex = cursor.getColumnIndex(Contacts.ContactMethods.DATA);
 
-			if(columnIndex != -1 ) {
+			if(columnIndex != -1  && cursor != null) {
 				Intent intent = new Intent(EditEvent.this, ItemSelect.class);
 				ArrayList<String> items = new ArrayList<String> ();
 
-				cursor.moveToFirst();
-				do {
-					items.add(cursor.getString(columnIndex));
-				} while(cursor.moveToNext());
+				if(cursor.moveToFirst()) {
+					do {
+						Log.d(TAG, "[selectAttendee] columnIndex : " + columnIndex);
+	
+						items.add(cursor.getString(columnIndex));
+					} while(cursor.moveToNext());
+	
+					intent.putExtra(ItemSelect.KEY_ITEMS, items);
+	
+					startActivityForResult(intent, StatusEditAttendee);
+				} else {
+					Toast.makeText(EditEvent.this, BLANK_ADDRESS_ALERT, Toast.LENGTH_LONG).show();
+				}
 
-				intent.putExtra(ItemSelect.KEY_ITEMS, items);
-
-				startActivityForResult(intent, StatusEditAttendee);
+			} else {
+				Toast.makeText(EditEvent.this, NONCOMPATIBLE_ALERT, Toast.LENGTH_LONG).show();
 			}
 		}
 	};
@@ -402,6 +412,9 @@ public class EditEvent extends Activity
 			newDoc.setContext(context);
 			newDoc.setStartTime(startTime);
 			newDoc.setEndTime(endTime);
+
+			/* newDoc remove temporaly to recompute location index */
+			newDoc.removeObj();
 		} else {
 			/* create new Document */
 			newDoc= new ScheduleContent(subject, context, startTime, endTime);

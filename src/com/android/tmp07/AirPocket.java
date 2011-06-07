@@ -27,6 +27,7 @@ public class AirPocket extends Activity
 
 			Log.d(TAG, "[clickEvent] + " + getPackageName());
 
+			/*
 			File file = new File(AppConfig.APP_CONFIG_PATH);
 			if(! file.exists()) {
 				Log.d(TAG, "hogehoge.txt is NOT existed");
@@ -50,6 +51,7 @@ public class AirPocket extends Activity
 					Log.e(TAG, e.getMessage());
 				}
 			}
+			*/
 
 			openEventIndex();
 		}
