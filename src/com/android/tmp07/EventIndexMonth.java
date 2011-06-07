@@ -114,6 +114,23 @@ public class EventIndexMonth extends Activity
 
 	/* This member describe communication channel to server */
 
+	OnClickListener backCurrentMonth = new View.OnClickListener() {
+		public void onClick(View v) {
+			Calendar now = Calendar.getInstance();
+			int mNum = currentDate.get(Calendar.MONTH) + currentDate.get(Calendar.YEAR) * 12;
+			int cNum = now.get(Calendar.MONTH) + now.get(Calendar.YEAR);
+			int direction = 1;
+
+			if(cNum < mNum) {
+				direction = -1;
+			}
+
+			if(cNum != mNum) {
+				doMoveMonth(direction, now);
+			}
+		}
+	};
+
 	public static boolean execSyncGoogleCalendar(Context index) {
 		boolean ret = false;
 		Log.d(TAG, "[execSyncGoogleCalendar] called");
@@ -186,7 +203,7 @@ public class EventIndexMonth extends Activity
 					Log.d(TAG, String.format("[onSensorChanged] x:%f, y:%f, z:%f",
 							event.values[0], event.values[1], event.values[2]));
 
-					doMoveMonth(motionStatus);
+					doMoveMonth(motionStatus, null);
 					
 					motionStatus = 2;
 				}
@@ -227,7 +244,7 @@ public class EventIndexMonth extends Activity
 						Log.d(TAG, "[moveMonth] ERROR:"+exception.getMessage());
 					}
 				} else if((motionStatus == 1) || (motionStatus == -1)){
-					doMoveMonth(motionStatus);
+					doMoveMonth(motionStatus, null);
 				
 					motionX = e.getX();
 					motionStatus = 0;
@@ -521,6 +538,7 @@ public class EventIndexMonth extends Activity
 		currentDateView.setTextSize(dateTextSize);
 		currentDateView.setBackgroundResource(R.drawable.headline_date);
 		currentDateView.setTextColor(getResources().getColor(R.color.normal_text));
+		currentDateView.setOnClickListener(backCurrentMonth);
 		currentDateView.setText(String.format("%d/%02d",
 					currentDate.get(Calendar.YEAR),
 					currentDate.get(Calendar.MONTH) + 1));
@@ -778,13 +796,15 @@ public class EventIndexMonth extends Activity
 		}
 	}
 
-	private void doMoveMonth(int direction) {
+	private void doMoveMonth(int direction, Calendar targetDate) {
 		FrameLayout mainFrame = (FrameLayout) findViewById(R.id.evMonth_mainFrame);
 		ObjectContainer replaceContainer = currentContainer;
 		int currentMonth = currentDate.get(Calendar.MONTH);
 		int currentYear = currentDate.get(Calendar.YEAR);
 		Animation currentSlide;
 		Animation replaceSlide;
+	
+		currentDate.set(Calendar.DAY_OF_MONTH, 1);
 
 		if(direction > 0) {
 			if(++currentMonth > 11){
@@ -804,6 +824,11 @@ public class EventIndexMonth extends Activity
 			currentSlide = AnimationUtils.loadAnimation(this, R.anim.slide_center2right);
 			replaceSlide = AnimationUtils.loadAnimation(this, R.anim.slide_left2center);
 			Log.d(TAG, "[onClick] clicked next button");
+		}
+
+		if(targetDate != null) {
+			currentYear = targetDate.get(Calendar.YEAR);
+			currentMonth = targetDate.get(Calendar.MONTH);
 		}
 
 		replaceSlide.setAnimationListener(animationListener);

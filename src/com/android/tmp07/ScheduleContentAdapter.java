@@ -55,6 +55,10 @@ public class ScheduleContentAdapter extends ArrayAdapter<ScheduleContent>
 				timeline = String.format("[終日]%04d/%02d/%02d-%04d/%02d/%02d",
 						startTime.getYear() + 1900, startTime.getMonth() + 1, startTime.getDate(),
 						endTime.getYear() + 1900, endTime.getMonth() + 1, endTime.getDate());
+			}else if(doc.isStatus(ScheduleContent.Multiday)) {
+				timeline = String.format("%04d/%02d/%02d %02d:%02d - %04d/%02d/%02d %02d:%02d",
+						startTime.getYear() + 1900, startTime.getMonth() + 1, startTime.getDate(), startTime.getHours(), startTime.getMinutes(),
+						endTime.getYear() + 1900, endTime.getMonth() + 1, endTime.getDate(), endTime.getHours(), endTime.getMinutes());
 			} else if(doc.isStatus(ScheduleContent.Allday)) {
 				timeline = String.format("[終日]%04d/%02d/%02d",
 						startTime.getYear() + 1900, startTime.getMonth() + 1, startTime.getDate());
