@@ -39,11 +39,19 @@
 		android:singleLine="true"
 		android:inputType="textPassword"
 		/>
+	<CheckBox
+		android:id="@+id/expose_passwd"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/second_input_label"
+		android:text="パスワードを表示"
+		/>
 	<Button
 		android:id="@+id/submit"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_below="@id/second_input_label"
+		android:layout_alignRight="@id/second_input"
 		android:text="OK"
 		/>
 	<Button
@@ -51,7 +59,7 @@
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_below="@id/second_input_label"
-		android:layout_toRightOf="@id/submit"
+		android:layout_toLeftOf="@id/submit"
 		android:text="cancel"
 		/>
 </RelativeLayout>

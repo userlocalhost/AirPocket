@@ -7,6 +7,10 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
 import android.widget.EditText;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.text.InputType;
 import android.util.Log;
 
 public class InputTwoColumns extends Activity {
@@ -37,6 +41,18 @@ public class InputTwoColumns extends Activity {
 		}
 	};
 
+	OnCheckedChangeListener exposeTrigger = new OnCheckedChangeListener() {
+		public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+			TextView inputPasswd = (TextView) findViewById(R.id.second_input);
+
+			if(isChecked) {
+				inputPasswd.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+			} else {
+				inputPasswd.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+			}
+		}
+	};
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -44,6 +60,9 @@ public class InputTwoColumns extends Activity {
 		setContentView(R.layout.input_two_dialog);
 
 		setLabels();
+
+		CheckBox checkExpose = (CheckBox) findViewById(R.id.expose_passwd);
+		checkExpose.setOnCheckedChangeListener(exposeTrigger);
 	}
 
 	private void setLabels() {

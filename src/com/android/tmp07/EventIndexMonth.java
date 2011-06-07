@@ -457,8 +457,6 @@ public class EventIndexMonth extends Activity
 				String id = data.getStringExtra(InputTwoColumns.KEY_FIRST_COLUMN);
 				String passwd = data.getStringExtra(InputTwoColumns.KEY_SECOND_COLUMN);
 
-				Toast.makeText(this, id + ", " + passwd, Toast.LENGTH_LONG).show();
-
 				AppConfig.setConfig("googleLoginId", id);
 				AppConfig.setConfig("googleLoginPasswd", passwd);
 					
@@ -477,7 +475,7 @@ public class EventIndexMonth extends Activity
 				}
 			}
 		} else {
-			if(requestCode == REQUEST_SET_GOOGLE_ACCOUNT_INFO) {
+			if(requestCode == REQUEST_SET_GOOGLE_ACCOUNT_INFO && resultCode != RESULT_CANCELED) {
 				Toast.makeText(this, "認証に失敗しました", Toast.LENGTH_LONG).show();
 			}
 		}

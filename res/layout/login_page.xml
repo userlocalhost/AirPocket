@@ -20,44 +20,53 @@
 			android:id="@+id/viewEmail"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:text="Email : "
+			android:text="Alpha version 0.1"
 			android:paddingTop="150sp"
 			android:textColor="@color/normal_text"
+			android:paddingBottom="150sp"
 			/>
-		<EditText
-			android:id="@+id/editEmail"
-			android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
-			android:layout_toRightOf="@id/viewEmail"
-			android:layout_alignBaseline="@id/viewEmail"
-			android:inputType="textEmailAddress"
-			android:singleLine="true"
-			/>
-		<TextView
-			android:id="@+id/viewPasswd"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_below="@id/viewEmail"
-			android:text="password : "
-			android:paddingTop="30sp"
-			android:paddingBottom="30sp"
-			android:textColor="@color/normal_text"
-			/>
-		<EditText
-			android:id="@+id/editPasswd"
-			android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
-			android:layout_toRightOf="@id/viewPasswd"
-			android:layout_alignBaseline="@id/viewPasswd"
-			android:inputType="textPassword"
-			android:singleLine="true"
-			/>
+		<!--<EditText-->
+			<!--android:id="@+id/editEmail"-->
+			<!--android:layout_width="fill_parent"-->
+			<!--android:layout_height="wrap_content"-->
+			<!--android:layout_toRightOf="@id/viewEmail"-->
+			<!--android:layout_alignBaseline="@id/viewEmail"-->
+			<!--android:inputType="textEmailAddress"-->
+			<!--android:singleLine="true"-->
+			<!--/>-->
+		<!--<TextView-->
+			<!--android:id="@+id/viewPasswd"-->
+			<!--android:layout_width="wrap_content"-->
+			<!--android:layout_height="wrap_content"-->
+			<!--android:layout_below="@id/viewEmail"-->
+			<!--android:text="password : "-->
+			<!--android:paddingTop="30sp"-->
+			<!--android:paddingBottom="30sp"-->
+			<!--android:textColor="@color/normal_text"-->
+			<!--/>-->
+		<!--<EditText-->
+			<!--android:id="@+id/editPasswd"-->
+			<!--android:layout_width="fill_parent"-->
+			<!--android:layout_height="wrap_content"-->
+			<!--android:layout_toRightOf="@id/viewPasswd"-->
+			<!--android:layout_alignBaseline="@id/viewPasswd"-->
+			<!--android:inputType="textPassword"-->
+			<!--android:singleLine="true"-->
+			<!--/>-->
+		<!--<Button-->
+			<!--android:id="@+id/loginButton"-->
+			<!--android:layout_width="wrap_content"-->
+			<!--android:layout_height="wrap_content"-->
+			<!--android:layout_below="@id/viewPasswd"-->
+			<!--android:layout_alignRight="@id/editPasswd"-->
+			<!--android:text="Login"-->
+			<!--/>-->
 		<Button
 			android:id="@+id/loginButton"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:layout_below="@id/viewPasswd"
-			android:layout_alignRight="@id/editPasswd"
+			android:layout_below="@id/viewEmail"
+			android:layout_alignLeft="@id/viewEmail"
 			android:text="Login"
 			/>
 	</RelativeLayout>
