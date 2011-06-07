@@ -413,25 +413,27 @@ public class ScheduleContent implements Serializable
 		}
 
 		ArrayList indexList = new ArrayList();
-		int regStartMinutes = (this.startTime.getHours() * 60) + this.startTime.getMinutes();
-		int regEndMinutes = (this.endTime.getHours() * 60) + this.endTime.getMinutes();
+		//int regStartMinutes = (this.startTime.getHours() * 60) + this.startTime.getMinutes();
+		//int regEndMinutes = (this.endTime.getHours() * 60) + this.endTime.getMinutes();
+		long regStartMinutes = this.startTime.getTime();
+		long regEndMinutes = this.endTime.getTime();
 		
 		this.setPosition(0, 0);
 
 		/* check duplicate docs */
 		for(int i=0; i<ScheduleContent.documents.size(); i++){
 			ScheduleContent doc = ScheduleContent.documents.get(i);
-			int startMinutes = (doc.getStartTime().getHours() * 60) + doc.getStartTime().getMinutes();
-			int endMinutes = (doc.getEndTime().getHours() * 60) + doc.getEndTime().getMinutes();
+			//int startMinutes = (doc.getStartTime().getHours() * 60) + doc.getStartTime().getMinutes();
+			//int endMinutes = (doc.getEndTime().getHours() * 60) + doc.getEndTime().getMinutes();
+			long startMinutes = doc.getStartTime().getTime();
+			long endMinutes = doc.getEndTime().getTime();
 
 			if((! doc.isStatus(ScheduleContent.Allday) && 
 				(doc.isJustSameDay(startTime) || doc.isJustSameDay(endTime)))
 					&&
 				(((regStartMinutes >= startMinutes) && (regStartMinutes < endMinutes)) ||
 				((regEndMinutes > startMinutes) && (regEndMinutes < endMinutes)) ||
-				((regStartMinutes < startMinutes) && (regEndMinutes > endMinutes)) ||
-				(! checkSameDate(endTime, doc.getEndTime()) && checkSameDate(endTime, doc.getStartTime()) && (regEndMinutes > startMinutes)) ||
-				(! checkSameDate(startTime, doc.getStartTime()) && checkSameDate(startTime, doc.getEndTime()) && (regStartMinutes > endMinutes)))
+				((regStartMinutes < startMinutes) && (regEndMinutes > endMinutes)))
 			){
 				this.addOverlappedId(doc.getId());
 				doc.addOverlappedId(this.getId());

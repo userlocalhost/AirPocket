@@ -21,6 +21,7 @@ public class ScheduleContentAdapter extends ArrayAdapter<ScheduleContent>
 	private static final String TAG = "ScheduleContentAdapter";
 	private List<ScheduleContent> items;
 	private static final int imageSize = 36;
+	private static final float sizeTimeText = 11f;
 
 	private LayoutInflater inflater;
 	private int resourceId;
@@ -71,6 +72,7 @@ public class ScheduleContentAdapter extends ArrayAdapter<ScheduleContent>
 			/* set title and timeline context */
 			TextView text = (TextView) row.findViewById(R.id.ev_list_row_label);
 			text.setText(String.format("%s\n%s", doc.getSubject(), timeline));
+			text.setTextSize(sizeTimeText);
 
 			/* set image-label */
 			String labelName = doc.getResourceLabel();
