@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.android.tmp07"
+	package="com.ariel.android.airpocket"
 	android:versionCode="2"
 	android:versionName="1.0">
 	<application
@@ -9,38 +9,50 @@
 		android:theme="@android:style/Theme.NoTitleBar"
 		>
 		<activity android:name="AirPocket"
+			android:screenOrientation="portrait"
 			android:label="@string/app_name">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
-		<activity android:name=".EventIndexMonth"/>
+		<activity android:name=".EventIndexMonth"
+			android:screenOrientation="portrait"
+			/>
 		<activity android:name=".EventIndexDay"
+			android:screenOrientation="portrait"
 			android:label="@string/eventindex_day_title">
 		</activity>
 		<activity android:name=".EventListView"
+			android:screenOrientation="portrait"
 			android:label="@string/eventindex_listview_title">
 		</activity>
 		<activity android:name=".EditEvent"
+			android:screenOrientation="portrait"
 			android:label="@string/editevent_title">
 		</activity>
 		<activity android:name=".EventViewer"
+			android:screenOrientation="portrait"
 			android:label="@string/eventviewer_title">
 		</activity>
 		<activity android:name="EditLabel"
-		 android:label="@string/app_name"
-		 android:theme="@android:style/Theme.Dialog"/>
+			android:screenOrientation="portrait"
+			android:label="@string/app_name"
+			android:theme="@android:style/Theme.Dialog"/>
 		<activity android:name="ItemSelect"
-		 android:label="@string/app_name"
-		 android:theme="@android:style/Theme.Dialog"/>
+			android:screenOrientation="portrait"
+			android:label="@string/app_name"
+			android:theme="@android:style/Theme.Dialog"/>
 		<activity android:name="ProgressiveProcessing"
-		 android:label="@string/app_name"
-		 android:theme="@android:style/Theme.Dialog"/>
+			android:screenOrientation="portrait"
+			android:label="@string/app_name"
+			android:theme="@android:style/Theme.Dialog"/>
 		<activity android:name="InputTwoColumns"
-		 android:label="@string/app_name"
-		 android:theme="@android:style/Theme.Dialog"/>
+			android:screenOrientation="portrait"
+			android:label="@string/app_name"
+			android:theme="@android:style/Theme.Dialog"/>
 		<activity android:name=".ShowConfig"
+			android:screenOrientation="portrait"
 			android:label="@string/eventviewer_title"/>
 	</application>
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>

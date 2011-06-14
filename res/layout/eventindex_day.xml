@@ -30,7 +30,7 @@
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
 			>
-			<com.android.tmp07.EventView
+			<com.ariel.android.airpocket.EventView
 				android:id="@+id/ev_day_index_listview"
 				android:layout_width="fill_parent"
 				android:layout_height="fill_parent"
