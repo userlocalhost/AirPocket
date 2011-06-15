@@ -86,15 +86,27 @@ public class EditEvent extends Activity
 		public void onCheckedChanged(CompoundButton button, boolean isChecked) {
 			if(isChecked) {
 				Log.d(TAG, "[checkAllDay] checked");
+
+				((Button) findViewById(R.id.start_date)).setEnabled(false);
+				((Button) findViewById(R.id.start_time)).setEnabled(false);
+				((Button) findViewById(R.id.end_date)).setEnabled(false);
+				((Button) findViewById(R.id.end_time)).setEnabled(false);
 			} else {
 				Log.d(TAG, "[checkAllDay] UN-checked");
+
+				((Button) findViewById(R.id.start_date)).setEnabled(true);
+				((Button) findViewById(R.id.start_time)).setEnabled(true);
+				((Button) findViewById(R.id.end_date)).setEnabled(true);
+				((Button) findViewById(R.id.end_time)).setEnabled(true);
 			}
 		}
 	};
 
 	OnClickListener submitEvent = new View.OnClickListener(){
 		public void onClick(View v){
-			if(startTime.getTime().compareTo(endTime.getTime()) < 0) {
+			CheckBox wholeDayCheck = (CheckBox) findViewById(R.id.check_allday);
+
+			if(startTime.getTime().compareTo(endTime.getTime()) < 0 || wholeDayCheck.isChecked()) {
 				makeDocument(startTime.getTime(), endTime.getTime());
 	
 				Intent i = new Intent();
