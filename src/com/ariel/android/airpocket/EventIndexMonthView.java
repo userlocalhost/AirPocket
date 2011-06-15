@@ -22,11 +22,4 @@ public class EventIndexMonthView extends TableLayout {
 
 		this.index = (EventIndexMonth) context;
 	}
-
-	@Override
-	public void onSizeChanged(int w, int h, int oldw, int oldh) {
-		Log.d(TAG, "[onSizeChanged]");
-
-		this.index.setFullscreen(w, h);
-	}
 }

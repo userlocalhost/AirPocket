@@ -16,6 +16,8 @@ import android.view.Display;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.WindowManager;
+import android.view.Display;
 
 import android.widget.RelativeLayout;
 import android.widget.LinearLayout;
@@ -94,7 +96,6 @@ public class EventIndexMonth extends Activity
 	protected final Calendar currentDate = Calendar.getInstance();
 
 	/* View size parameter */
-	private static int columnHeight = 0;
 	private static final int labelHeight = 25;
 	private static final float labelSize = 18f;
 	private static final float dateTextSize = 20f;
@@ -258,17 +259,6 @@ public class EventIndexMonth extends Activity
 			return true;
 		}
 	};
-
-	public void setFullscreen(int screenWidth, int screenHeight) {
-		LinkedList<TextView> contents = currentContainer.contents;
-		this.columnHeight = (screenHeight - labelHeight) / 6;
-
-		for(int i=0; i<contents.size(); i++) {
-			TextView viewDay = contents.get(i);
-
-			viewDay.setHeight(columnHeight);
-		}
-	}
 
 	@Override
 	protected void onResume() {
@@ -545,6 +535,14 @@ public class EventIndexMonth extends Activity
 	}
 
 	private void generateMonthView(LinearLayout canvas, LinkedList<TextView> contents) {
+		WindowManager windowmanager = (WindowManager)getSystemService(WINDOW_SERVICE);
+		Display disp = windowmanager.getDefaultDisplay();
+
+		/* 2 is default padding of view */
+		int columnHeight = (disp.getHeight() - (labelHeight + 2) - ((int)labelSize + 2)) / 6;
+
+		Log.d(TAG, String.format("[generateMonthView] (w,h) = (%d,%d) [%d]", disp.getWidth(), disp.getHeight(), columnHeight));
+
 		try {
 			EventIndexMonthView mainBoard = new EventIndexMonthView(this);
 			Calendar tmpCal = (Calendar) currentDate.clone();
