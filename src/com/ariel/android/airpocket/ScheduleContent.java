@@ -357,6 +357,10 @@ public class ScheduleContent implements Serializable
 	public void setStatus(int status) {
 		this.status |= status;
 	}
+	
+	public void delStatus(int status) {
+		this.status &= ~status;
+	}
 
 	public void setResourceLabel(String label) {
 		this.resourceLabel = label;

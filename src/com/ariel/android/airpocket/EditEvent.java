@@ -439,6 +439,8 @@ public class EditEvent extends Activity
 
 		if(checkAllDay.isChecked()) {
 			newDoc.setStatus(ScheduleContent.Allday);
+		} else {
+			newDoc.delStatus(ScheduleContent.Allday);
 		}
 
 		if(resourceLabel != null) {

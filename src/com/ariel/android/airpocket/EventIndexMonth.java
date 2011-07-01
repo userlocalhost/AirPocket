@@ -387,11 +387,12 @@ public class EventIndexMonth extends Activity
 				}
 
 				break;
-			case R.id.menuShowConfig:
-				Intent intent = new Intent(this, ShowConfig.class);
+			// for debug processing
+			//case R.id.menuShowConfig:
+				//Intent intent = new Intent(this, ShowConfig.class);
 
-				startActivity(intent);
-				break;
+				//startActivity(intent);
+				//break;
 		}
 
 		return true;
